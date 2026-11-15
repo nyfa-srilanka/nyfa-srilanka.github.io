@@ -750,7 +750,6 @@
 <!-- NYFA PHOTO GALLERY ADD-ON
      Paste this ENTIRE block into your existing Index.html, immediately
      BEFORE the line beginning 
-<script src="./training-calendar.js"></script>
 <div class="overlay" id="overlay">.
      The existing website's script is BELOW that line, so its built-in
      sidebar navigation will recognise the new gallery button automatically.
@@ -878,6 +877,8 @@ by('nyg-refresh').addEventListener('click',function(){load(true)});
 nav.addEventListener('click',function(){if(!loaded&&!loading)load(false);setTimeout(function(){if(by('crumbTitle'))by('crumbTitle').textContent='Photo gallery';},0)});
 })();
 </script>
+
+<script src="./training-calendar.js"></script>
 
 <div class="overlay" id="overlay"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal-head"><div><div class="eyebrow">Training details</div><h2 id="modalTitle"></h2></div><button class="close" id="modalClose" aria-label="Close">×</button></div><div id="modalBody" class="detail-grid"></div><a class="primary-link" id="modalMaps" href="#" target="_blank" rel="noopener noreferrer">Open venue in Google Maps ↗</a></div></div>
 
