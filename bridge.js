@@ -50,6 +50,44 @@
     document.head.appendChild(script);
   }
 
+
+  // A short browser cache makes REPEAT visits nearly instantaneous.
+  // Only reliable dashboard responses are saved; manual Refresh bypasses it.
+  // The UI labels cached results as a recent snapshot, never as a live fetch.
+  var DASHBOARD_CACHE_KEY = 'nyfa-public-dashboard-cache-v1';
+  var DASHBOARD_CACHE_MS = 5 * 60 * 1000; // 5 minutes maximum
+
+  function saveDashboardSnapshot(value) {
+    if (!value || !Array.isArray(value.sessions) || !value.dashboard) return;
+    var mode = value.reliability && value.reliability.mode;
+    if (mode !== 'live' && mode !== 'recent') return;
+    try {
+      global.localStorage.setItem(DASHBOARD_CACHE_KEY,
+        JSON.stringify({savedMs: Date.now(), value: value}));
+    } catch (ignore) { /* Storage may be full or disabled. Live fetch still works. */ }
+  }
+
+  function readDashboardSnapshot() {
+    try {
+      var stored = JSON.parse(global.localStorage.getItem(DASHBOARD_CACHE_KEY) || 'null');
+      if (!stored || !stored.savedMs || !stored.value) return null;
+      var age = Date.now() - Number(stored.savedMs);
+      if (age < 0 || age > DASHBOARD_CACHE_MS) return null;
+      var value = stored.value;
+      if (!value.dashboard || !Array.isArray(value.sessions)) return null;
+      var mode = value.reliability && value.reliability.mode;
+      if (mode !== 'live' && mode !== 'recent') return null;
+      // Do not overwrite the stored original: label the rendered copy as recent.
+      var preview = Object.assign({}, value, {
+        reliability: Object.assign({}, value.reliability, {
+          mode: 'recent',
+          cacheAgeSeconds: Math.max(0, Math.floor(age / 1000))
+        })
+      });
+      return preview;
+    } catch (ignore) { return null; }
+  }
+
   // Minimal compatibility layer for the site's existing google.script.run calls.
   // Only the three read-only site methods below are exposed.
   function runner(success, failure) {
@@ -57,7 +95,20 @@
       withSuccessHandler: function (handler) { return runner(handler, failure); },
       withFailureHandler: function (handler) { return runner(success, handler); },
       getDashboardData: function (fresh) {
-        request('dashboard', { fresh: fresh === true }, success, failure);
+        if (fresh !== true) {
+          var preview = readDashboardSnapshot();
+          if (preview) {
+            // Match the asynchronous google.script.run callback contract.
+            setTimeout(function () {
+              if (typeof success === 'function') success(preview);
+            }, 0);
+            return;
+          }
+        }
+        request('dashboard', { fresh: fresh === true }, function (value) {
+          saveDashboardSnapshot(value);
+          if (typeof success === 'function') success(value);
+        }, failure);
       },
       nyfaGalleryList: function (fresh) {
         request('gallery', { fresh: fresh === true }, success, failure);
