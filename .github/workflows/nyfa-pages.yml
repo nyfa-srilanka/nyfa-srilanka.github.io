@@ -28,7 +28,7 @@ jobs:
       - name: Prepare site files
         run: |
           mkdir -p public
-          cp index.html bridge.js public/
+         cp index.html bridge.js phase1-ui.js public/
 
       - name: Build up-to-date public data snapshot
         env:
