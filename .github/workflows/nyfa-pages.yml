@@ -25,10 +25,10 @@ jobs:
       - name: Check out public website files
         uses: actions/checkout@v4
 
-      - name: Prepare site files
+       - name: Prepare site files
         run: |
           mkdir -p public
-             cp index.html bridge.js phase1-ui.js smart-map.js public/
+          cp index.html bridge.js phase1-ui.js smart-map.js home-map-expand.js public/
 
       - name: Build up-to-date public data snapshot
         env:
