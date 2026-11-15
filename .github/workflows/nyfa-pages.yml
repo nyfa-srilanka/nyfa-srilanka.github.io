@@ -1,0 +1,55 @@
+name: NYFA Fast Dashboard Snapshot
+
+on:
+  # GitHub scheduled runs can sometimes be delayed.
+  # Off-the-hour schedule reduces congestion; every 5 minutes.
+  schedule:
+    - cron: '2-59/5 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: nyfa-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out public website files
+        uses: actions/checkout@v4
+
+      - name: Prepare site files
+        run: |
+          mkdir -p public
+          cp index.html bridge.js public/
+
+      - name: Build up-to-date public data snapshot
+        env:
+          NYFA_PUBLIC_API_URL: 'https://script.google.com/macros/s/AKfycbw5_o8mL02CWGa3vNILnP4OIe6Mmr_8q7_daVj8VYlvIvMewa9CnhqiS83QmfFSGrCU/exec'
+        run: python3 scripts/build_snapshot.py public/dashboard-snapshot.json
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload website and snapshot
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./public
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Deploy the updated website
+        id: deploy
+        uses: actions/deploy-pages@v4
