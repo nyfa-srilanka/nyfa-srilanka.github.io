@@ -26,12 +26,11 @@ jobs:
         uses: actions/checkout@v4
 
 
+
       - name: Prepare site files
         run: |
           mkdir -p public
-  
-
-cp index.html bridge.js phase1-ui.js smart-map.js home-map-expand.js training-calendar.js nyfa-district-gallery.js public/
+          cp index.html bridge.js phase1-ui.js smart-map.js home-map-expand.js training-calendar.js nyfa-district-gallery.js public/
 
 
       - name: Build up-to-date public data snapshot
