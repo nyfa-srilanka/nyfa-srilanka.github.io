@@ -31,7 +31,8 @@ jobs:
         run: |
           mkdir -p public
 
-          cp index.html bridge.js phase1-ui.js smart-map.js home-map-expand.js training-calendar.js nyfa-district-gallery.js nyfa-home-photo-banner.js public/
+          cp index.html bridge.js phase1-ui.js smart-map.js home-map-expand.js training-calendar.js nyfa-district-gallery.js nyfa-home-photo-banner.js nyfa-district-explorer.js public/
+
 
       - name: Build up-to-date public data snapshot
         env:
