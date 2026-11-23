@@ -1281,26 +1281,239 @@ function renderProgress(){
  $('progressTrack').setAttribute('aria-valuenow',pct===null?'0':String(Math.min(100,Math.max(0,Math.round(pct)))));
  var active=k.areasWithTraining&&k.areasWithTraining.value, areas=k.areasTracked&&k.areasTracked.value;var areaInfo=(typeof active==='number'&&typeof areas==='number')?' · '+num(active)+' of '+num(areas)+' reporting areas with training reported.':''; $('progressNote').textContent=(pct===null?'Progress will appear when the Dashboard has valid national target and completed trainee figures.':'Calculated from reported trainees and the national target in Dashboard. Scheduled sessions are not counted as completed.')+areaInfo;
 }
-function renderHomeMap(){
- var ok=data.sessions.filter(mapHasPublishedCoords);
- $('homeMappedCount').textContent=num(ok.length);
- $('homeMapDescription').textContent=ok.length?'Pins use your published coordinates, coloured by schedule / completion status. Click a cluster to explore overlapping sessions.':'No published coordinates found. Enter and verify actual Latitude and Longitude in Map Data before displaying a session.';
- if(!homeMapInView){return;} // Don't initialise hundreds of pins below the viewport.
- if(typeof L==='undefined'){
-   $('homeMapDescription').textContent+=' Interactive map loading when needed.';
-   webEnsureMapLibraries(function(){if(typeof L!=='undefined'&&current==='overview')webSafeSection('Home map',renderHomeMap);});
-   return;
- }
- if(!homeMap){
-   homeMap=L.map('leafletHomeMap',{scrollWheelZoom:false,zoomControl:true}).setView([7.8731,80.7718],7);
-   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:18}).addTo(homeMap);
-   homeLayer=mapCreateLayer().addTo(homeMap);
- }
- homeLayer.clearLayers();
- var bounds=[];
- ok.forEach(function(s){var p=mapMarker(s);p.bindPopup(mapPopup(s));homeLayer.addLayer(p);bounds.push([s.lat,s.lng]);});
- if(bounds.length)homeMap.fitBounds(bounds,{padding:[28,28],maxZoom:9});else homeMap.setView([7.8731,80.7718],7);
- setTimeout(function(){if(homeMap)homeMap.invalidateSize()},160);
+
+function renderHomeMap() {
+  var points = data.sessions.filter(mapHasPublishedCoords);
+
+  $('homeMappedCount').textContent = num(points.length);
+  $('homeMapDescription').textContent = points.length
+    ? 'Numbered circles group nearby sessions. Zoom in for individual colour-coded venues.'
+    : 'No published coordinates available yet.';
+
+  if (!homeMapInView) return;
+
+  if (typeof L === 'undefined') {
+    webEnsureMapLibraries(function () {
+      if (typeof L !== 'undefined' && current === 'overview')
+        renderHomeMap();
+    });
+    return;
+  }
+
+  if (!document.getElementById('nyfa-home-map-polish')) {
+    var css = document.createElement('style');
+    css.id = 'nyfa-home-map-polish';
+    css.textContent = `
+      #sec-overview #leafletHomeMap {
+        min-height:480px;
+        background:#e6f2f6;
+        border:1px solid #d2e3e9;
+      }
+      #leafletHomeMap .nyfa-hm-icon {
+        background:none;
+        border:0;
+      }
+      #leafletHomeMap .nyfa-hm-dot {
+        display:block;
+        width:18px;
+        height:18px;
+        border-radius:50%;
+        border:3px solid white;
+        background:var(--hm-color);
+        box-shadow:0 2px 9px #14334a4d;
+      }
+      #leafletHomeMap .nyfa-hm-group {
+        height:35px;
+        min-width:35px;
+        border-radius:22px;
+        display:grid;
+        place-items:center;
+        padding:0 5px;
+        color:white;
+        background:#214a60;
+        border:3px solid white;
+        box-shadow:0 3px 12px #123a5052;
+        font:800 12px Manrope,sans-serif;
+      }
+      @media(max-width:700px) {
+        #sec-overview #leafletHomeMap {
+          min-height:375px;
+        }
+      }
+    `;
+    document.head.appendChild(css);
+  }
+
+  function repaint() {
+    if (!homeMap || !homeLayer) return;
+    homeLayer.clearLayers();
+
+    var zoom = homeMap.getZoom();
+    var cell = zoom < 8.5 ? 54 : zoom < 10 ? 38 : 20;
+    var buckets = {};
+
+    points.forEach(function (s) {
+      var pixel = homeMap.project([s.lat, s.lng], zoom);
+      var key = Math.floor(pixel.x / cell) + ':' +
+                Math.floor(pixel.y / cell);
+
+      if (!buckets[key])
+        buckets[key] = {items:[], lat:0, lng:0};
+
+      buckets[key].items.push(s);
+      buckets[key].lat += s.lat;
+      buckets[key].lng += s.lng;
+    });
+
+    var colors = {
+      completed:'#14936d',
+      upcoming:'#168bb5',
+      overdue:'#e49a31',
+      unreported:'#df8742',
+      postponed:'#8d77bb',
+      cancelled:'#8995a1',
+      undated:'#698699'
+    };
+
+    Object.keys(buckets).forEach(function (key) {
+      var b = buckets[key];
+      var count = b.items.length;
+      var lat = b.lat / count;
+      var lng = b.lng / count;
+      var status = count === 1
+        ? mapStage(b.items[0]).key : 'mixed';
+
+      var icon = count === 1
+        ? L.divIcon({
+            className:'nyfa-hm-icon',
+            iconSize:[18,18],
+            iconAnchor:[9,9],
+            html:'<span class="nyfa-hm-dot" style="--hm-color:' +
+              (colors[status] || '#34576c') + '"></span>'
+          })
+        : L.divIcon({
+            className:'nyfa-hm-icon',
+            iconSize:[35,35],
+            iconAnchor:[17,17],
+            html:'<span class="nyfa-hm-group">' +
+              (count > 99 ? '99+' : count) + '</span>'
+          });
+
+      var pin = L.marker([lat,lng], {
+        icon:icon,
+        title:count === 1
+          ? (b.items[0].venue || b.items[0].id)
+          : count + ' training sessions'
+      });
+
+      if (count === 1) {
+        pin.bindPopup(mapPopup(b.items[0]));
+      } else {
+        var list = b.items.slice(0,7).map(function (s) {
+          return '<div style="padding:4px 0;border-bottom:1px solid #e7edf1">' +
+            '<b>' + safe(s.id) + '</b> · ' +
+            safe(s.venue || s.ds || s.district) +
+            ' <small>(' + safe(mapStage(s).label) + ')</small></div>';
+        }).join('');
+
+        pin.bindPopup(
+          '<div class="map-popup-title">' +
+          count + ' sessions in this area</div>' + list +
+          (count > 7
+            ? '<div>+' + (count-7) + ' more. Zoom in to explore.</div>'
+            : '')
+        );
+
+        pin.on('click', function () {
+          if (homeMap.getZoom() < 12) {
+            homeMap.setView(
+              [lat,lng],
+              Math.min(12,homeMap.getZoom()+2)
+            );
+            pin.closePopup();
+          }
+        });
+      }
+      homeLayer.addLayer(pin);
+    });
+  }
+
+  if (!homeMap) {
+    homeMap = L.map('leafletHomeMap', {
+      scrollWheelZoom:false,
+      zoomControl:true,
+      zoomSnap:0.25,
+      minZoom:6,
+      maxZoom:15,
+      maxBounds:[[5.3,79.15],[10.4,82.6]],
+      maxBoundsViscosity:0.75
+    }).setView([7.85,80.75],7);
+
+    homeLayer = L.layerGroup().addTo(homeMap);
+
+    homeMap.on('zoomend', function () {
+      if (homeMap._nyfaRepaint) homeMap._nyfaRepaint();
+    });
+
+    homeMap.fitBounds(
+      [[5.85,79.60],[9.91,81.98]],
+      {padding:[16,26]}
+    );
+
+    // Display Sri Lanka's district outlines
+    // instead of the distracting surrounding basemap.
+    fetch(
+      'https://cdn.jsdelivr.net/gh/MalakaGu/Sri-lanka-maps@master/discrict_map/District_geo.json'
+    )
+    .then(function (r) {
+      if (!r.ok) throw Error('Map outline unavailable');
+      return r.json();
+    })
+    .then(function (geo) {
+      var outlines = L.geoJSON(geo, {
+        filter:function (f) {
+          return f.properties &&
+            f.properties.ADM2_EN !== '[unknown]';
+        },
+        style:{
+          color:'#b1cdd4',
+          weight:1,
+          fillColor:'#fbfdfd',
+          fillOpacity:1
+        },
+        onEachFeature:function (f,layer) {
+          if (f.properties.ADM2_EN)
+            layer.bindTooltip(
+              f.properties.ADM2_EN,
+              {sticky:true}
+            );
+        }
+      }).addTo(homeMap);
+
+      outlines.bringToBack();
+
+      homeMap.attributionControl.addAttribution(
+        'District outlines: <a href="https://github.com/MalakaGu/Sri-lanka-maps">Sri Lanka maps</a>'
+      );
+    })
+    .catch(function () {
+      // Fallback if the district outline cannot load.
+      L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+        {
+          attribution:'&copy; OpenStreetMap contributors &copy; CARTO',
+          maxZoom:19
+        }
+      ).addTo(homeMap).bringToBack();
+    });
+  }
+
+  homeMap._nyfaRepaint = repaint;
+  repaint();
+
+  setTimeout(function () {
+    if (homeMap) homeMap.invalidateSize();
+  },160);
 }
 function renderBars(){var d=data.dashboard||{};var rows=(d.districts||[]).filter(function(r){return r.youthTrained&&r.youthTrained.value>0}).sort(function(a,b){return (b.youthTrained.value||0)-(a.youthTrained.value||0)}).slice(0,8);$('districtBars').innerHTML=rows.length?rows.map(function(r){var trained=r.youthTrained.value||0, target=r.targetYouth&&r.targetYouth.value;var pct=target?Math.min(100,trained/target*100):0;return '<div class="bar-row"><span class="bar-label">'+safe(r.name)+'</span><div class="track"><div class="bar-fill" style="width:'+Math.max(2,pct)+'%"></div></div><span class="bar-num">'+num(trained)+(target?' / '+num(target):'')+'</span></div>'}).join(''):'<div class="empty">No completed youth training figures recorded in the Dashboard yet.</div>'}
 function renderDistrictProgress(){var d=data.dashboard||{};var q=String(($('search-district-dashboard')||{}).value||'').toLowerCase().trim();var area=String(($('type-district-dashboard')||{}).value||'');var rows=(d.districts||[]).filter(function(r){return (!q||r.name.toLowerCase().indexOf(q)>=0)&&(!area||r.areaType===area)});$('districtProgressRows').innerHTML=rows.length?rows.map(function(r){var p=r.youthCoverage&&r.youthCoverage.value;var valid=p!==null&&p!==undefined&&isFinite(p);return '<tr><td>'+safe(r.name)+'</td><td>'+safe(measureText(r.targetYouth))+'</td><td><strong>'+safe(measureText(r.youthTrained))+'</strong></td><td>'+safe(measureText(r.completedSessions))+'</td><td><div class="coverage-cell">'+(valid?'<div class="track"><div class="bar-fill" style="width:'+Math.max(0,Math.min(100,p*100))+'%"></div></div>':'')+'<span>'+safe(measureText(r.youthCoverage))+'</span></div></td><td>'+safe(safeGnText(r.gnRepresentations))+'</td></tr>'}).join(''):'<tr><td colspan="6" class="empty">'+(d.available?'No reporting areas match your filter.':'No Dashboard data is available. Check the Dashboard worksheet.')+'</td></tr>';$('districtProgressCount').textContent=num(rows.length)+' reporting areas shown'}
