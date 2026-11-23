@@ -9,7 +9,7 @@
     css.textContent = `
       #nyfa-photo-banner[hidden]{display:none!important}
       #nyfa-photo-banner{margin:0 0 22px}
-      #nyfa-photo-banner .npb-stage{height:175px;position:relative;overflow:hidden;border-radius:16px;background:#143448;box-shadow:0 8px 25px #15394b16}
+      #nyfa-photo-banner .npb-stage{height:240px;position:relative;overflow:hidden;border-radius:16px;background:#143448;box-shadow:0 8px 25px #15394b16}
       #nyfa-photo-banner .npb-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .7s ease}
       #nyfa-photo-banner .npb-photo.active{opacity:1}
       #nyfa-photo-banner .npb-overlay{position:absolute;inset:0;background:linear-gradient(90deg,#0a243ae8 0%,#0a243a9e 40%,#0a243a22 100%);pointer-events:none}
@@ -26,7 +26,7 @@
       #nyfa-photo-banner button:focus-visible{outline:3px solid #8de9da;outline-offset:2px}
       @media(max-width:650px){
         #nyfa-photo-banner{margin-bottom:17px}
-        #nyfa-photo-banner .npb-stage{height:125px;border-radius:13px}
+        #nyfa-photo-banner .npb-stage{height:175px;border-radius:13px}
         #nyfa-photo-banner .npb-text{left:14px;max-width:67%}
         #nyfa-photo-banner .npb-eyebrow{font-size:8px;letter-spacing:.8px}
         #nyfa-photo-banner .npb-text h3{font-size:18px}
