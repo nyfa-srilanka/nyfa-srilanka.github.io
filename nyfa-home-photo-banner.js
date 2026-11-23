@@ -10,7 +10,7 @@
       #nyfa-photo-banner[hidden]{display:none!important}
       #nyfa-photo-banner{margin:0 0 22px}
       #nyfa-photo-banner .npb-stage{height:240px;position:relative;overflow:hidden;border-radius:16px;background:#143448;box-shadow:0 8px 25px #15394b16}
-      #nyfa-photo-banner .npb-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .7s ease}
+      #nyfa-photo-banner .npb-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;opacity:0;transition:opacity .7s ease}
       #nyfa-photo-banner .npb-photo.active{opacity:1}
       #nyfa-photo-banner .npb-overlay{position:absolute;inset:0;background:linear-gradient(90deg,#0a243ae8 0%,#0a243a9e 40%,#0a243a22 100%);pointer-events:none}
       #nyfa-photo-banner .npb-text{position:absolute;z-index:1;left:25px;top:50%;transform:translateY(-50%);color:white;max-width:70%}
