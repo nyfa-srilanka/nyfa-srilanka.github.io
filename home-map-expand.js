@@ -91,7 +91,7 @@
       });
     }
     function close() {
-      if (!document.body.classList.contains('nyfa-home-map-expanded')) return;
+
       document.body.classList.remove('nyfa-home-map-expanded');
       document.body.style.overflow = oldOverflow;
       button.textContent = '⤢ Expand map';
