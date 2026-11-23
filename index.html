@@ -458,6 +458,211 @@
 .resource-status{background:#f4f6f8;border-color:#e1e7ec;color:#64788b}
 @media(max-width:600px){.resource-card{min-height:190px}.resource-details{min-height:160px}.resource-lang{font-size:10px;padding:5px 9px}}
   </style>
+  
+<!-- NYFA Subtle Micro-Animations Upgrade -->
+<style id="nyfa-micro-animations">
+
+/* 1. Smooth transitions between website tabs */
+@keyframes nyfaPageEnter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.section.active {
+  animation: nyfaPageEnter 280ms ease-out both;
+}
+
+/* 2. Gentle elevation for dashboard cards */
+.metric,
+.dp-kpi,
+.districtcard,
+.resource-card {
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+}
+
+/* 3. Smooth navigation and button feedback */
+.navbtn,
+.mobile-tab,
+.mini-button,
+.refresh,
+.ghost,
+.dp-export,
+.primary-link {
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+/* 4. Refined search boxes and dropdowns */
+.input,
+.select,
+.dp-field input,
+.dp-field select,
+#nyfa-dex select,
+#sec-calendar select,
+#sec-calendar input {
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    background-color 200ms ease;
+}
+
+.input:hover,
+.select:hover,
+.dp-field input:hover,
+.dp-field select:hover {
+  border-color: #86cfc5;
+}
+
+.input:focus,
+.select:focus,
+.dp-field input:focus,
+.dp-field select:focus {
+  border-color: #00a89c;
+  box-shadow: 0 0 0 3px rgba(0,168,156,.12);
+}
+
+/* 5. Animated training progress indicators */
+.progress-fill,
+.bar-fill,
+.dp-chart-fill {
+  transition: width 850ms cubic-bezier(.2,.7,.2,1);
+}
+
+#sec-districts #nyfa-dex .dex-progress-fill {
+  transition: width 850ms cubic-bezier(.2,.7,.2,1);
+}
+
+/* Subtle one-time light sweep */
+#sec-overview .progress-fill {
+  position: relative;
+  overflow: hidden;
+}
+
+#sec-overview .progress-fill::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -40%;
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.35),
+    transparent
+  );
+  animation: nyfaProgressShine 1600ms ease-in-out 900ms 1;
+}
+
+@keyframes nyfaProgressShine {
+  from { transform: translateX(0); }
+  to   { transform: translateX(450%); }
+}
+
+/* 6. Elegant district and session interactions */
+.dp-session-entry,
+#nyfa-dex .dex-session,
+.row-upcoming {
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease;
+}
+
+/* Hover effects for mouse and trackpad users only */
+@media (hover: hover) and (pointer: fine) {
+
+  .metric:hover,
+  .dp-kpi:hover,
+  .districtcard:hover,
+  .resource-card:hover {
+    transform: translateY(-2px);
+    border-color: #c6e6e1;
+    box-shadow: 0 12px 28px rgba(15,48,65,.09);
+  }
+
+  .navbtn:hover {
+    transform: translateX(2px);
+  }
+
+  .mini-button:hover,
+  .refresh:hover,
+  .ghost:hover,
+  .dp-export:hover,
+  .primary-link:hover {
+    transform: translateY(-1px);
+  }
+
+  .dp-session-entry:hover,
+  #nyfa-dex .dex-session:hover,
+  .row-upcoming:hover {
+    background-color: #f3faf9;
+  }
+}
+
+/* 7. Tactile button feedback */
+.mini-button:active,
+.refresh:active,
+.ghost:active,
+.dp-export:active {
+  transform: scale(.98);
+}
+
+/* 8. Visible keyboard focus */
+.navbtn:focus-visible,
+.mobile-tab:focus-visible,
+.mini-button:focus-visible,
+.refresh:focus-visible,
+.ghost:focus-visible,
+.dp-export:focus-visible {
+  outline: 2px solid #00a89c;
+  outline-offset: 3px;
+}
+
+/* 9. Accessibility: respect reduced-motion settings */
+@media (prefers-reduced-motion: reduce) {
+
+  .section.active,
+  #sec-overview .progress-fill::after {
+    animation: none !important;
+  }
+
+  .metric,
+  .dp-kpi,
+  .districtcard,
+  .resource-card,
+  .navbtn,
+  .mobile-tab,
+  .mini-button,
+  .refresh,
+  .ghost,
+  .dp-export,
+  .primary-link,
+  .input,
+  .select,
+  .dp-field input,
+  .dp-field select,
+  .progress-fill,
+  .bar-fill,
+  .dp-chart-fill,
+  #sec-districts #nyfa-dex .dex-progress-fill,
+  .dp-session-entry,
+  #nyfa-dex .dex-session,
+  .row-upcoming {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+</style>
+<!-- End NYFA Micro-Animations -->
+
 </head>
 <body>
 <div class="shell">
