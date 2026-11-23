@@ -1344,99 +1344,107 @@ function renderHomeMap() {
     document.head.appendChild(css);
   }
 
-  function repaint() {
-    if (!homeMap || !homeLayer) return;
-    homeLayer.clearLayers();
 
-    var zoom = homeMap.getZoom();
-    var cell = zoom < 8.5 ? 54 : zoom < 10 ? 38 : 20;
-    var buckets = {};
+function repaint() {
+  if (!homeMap || !homeLayer) return;
 
-    points.forEach(function (s) {
-      var pixel = homeMap.project([s.lat, s.lng], zoom);
-      var key = Math.floor(pixel.x / cell) + ':' +
-                Math.floor(pixel.y / cell);
+  homeLayer.clearLayers();
 
-      if (!buckets[key])
-        buckets[key] = {items:[], lat:0, lng:0};
+  var colors = {
+    completed: '#14936d',
+    upcoming: '#168bb5',
+    overdue: '#e49a31',
+    unreported: '#df8742',
+    postponed: '#8d77bb',
+    cancelled: '#8995a1',
+    undated: '#698699',
+    mixed: '#344e68'
+  };
 
-      buckets[key].items.push(s);
-      buckets[key].lat += s.lat;
-      buckets[key].lng += s.lng;
-    });
+  // Combine only sessions at exactly the same
+  // mapped coordinates. No nearby clustering.
+  var venues = new Map();
 
-    var colors = {
-      completed:'#14936d',
-      upcoming:'#168bb5',
-      overdue:'#e49a31',
-      unreported:'#df8742',
-      postponed:'#8d77bb',
-      cancelled:'#8995a1',
-      undated:'#698699'
-    };
+  points.forEach(function(s) {
+    var key = Number(s.lat).toFixed(5) + ',' +
+              Number(s.lng).toFixed(5);
 
-    Object.keys(buckets).forEach(function (key) {
-      var b = buckets[key];
-      var count = b.items.length;
-      var lat = b.lat / count;
-      var lng = b.lng / count;
-      var status = count === 1
-        ? mapStage(b.items[0]).key : 'mixed';
+    if (!venues.has(key)) venues.set(key, []);
+    venues.get(key).push(s);
+  });
 
-      var icon = count === 1
-        ? L.divIcon({
-            className:'nyfa-hm-icon',
-            iconSize:[18,18],
-            iconAnchor:[9,9],
-            html:'<span class="nyfa-hm-dot" style="--hm-color:' +
-              (colors[status] || '#34576c') + '"></span>'
-          })
-        : L.divIcon({
-            className:'nyfa-hm-icon',
-            iconSize:[35,35],
-            iconAnchor:[17,17],
-            html:'<span class="nyfa-hm-group">' +
-              (count > 99 ? '99+' : count) + '</span>'
-          });
+  venues.forEach(function(items) {
+    var first = items[0];
 
-      var pin = L.marker([lat,lng], {
-        icon:icon,
-        title:count === 1
-          ? (b.items[0].venue || b.items[0].id)
-          : count + ' training sessions'
-      });
+    var statuses = [...new Set(
+      items.map(function(s) {
+        return mapStage(s).key;
+      })
+    )];
 
-      if (count === 1) {
-        pin.bindPopup(mapPopup(b.items[0]));
-      } else {
-        var list = b.items.slice(0,7).map(function (s) {
-          return '<div style="padding:4px 0;border-bottom:1px solid #e7edf1">' +
-            '<b>' + safe(s.id) + '</b> · ' +
-            safe(s.venue || s.ds || s.district) +
-            ' <small>(' + safe(mapStage(s).label) + ')</small></div>';
-        }).join('');
+    var state = statuses.length === 1
+      ? statuses[0] : 'mixed';
 
-        pin.bindPopup(
-          '<div class="map-popup-title">' +
-          count + ' sessions in this area</div>' + list +
-          (count > 7
-            ? '<div>+' + (count-7) + ' more. Zoom in to explore.</div>'
-            : '')
-        );
+    var names = [...new Set(
+      items.map(function(s) {
+        return String(s.venue || '').trim();
+      }).filter(Boolean)
+    )];
 
-        pin.on('click', function () {
-          if (homeMap.getZoom() < 12) {
-            homeMap.setView(
-              [lat,lng],
-              Math.min(12,homeMap.getZoom()+2)
-            );
-            pin.closePopup();
-          }
-        });
+    var title = names.length > 1
+      ? 'Shared mapped location'
+      : (first.venue || first.ds || 'Training location');
+
+    var marker = L.circleMarker(
+      [first.lat, first.lng],
+      {
+        radius: 7,
+        color: '#ffffff',
+        weight: 2,
+        fillColor: colors[state],
+        fillOpacity: 1
       }
-      homeLayer.addLayer(pin);
+    );
+
+    var details = items.map(function(s) {
+      return '<div style="padding:7px 0;border-bottom:1px solid #e8edf1">' +
+        '<b>' + safe(s.id) + '</b><br>' +
+        safe(s.venue || 'Venue not recorded') + '<br>' +
+        '<small>' + safe(formatDate(s.date)) +
+        ' · ' + safe(mapStage(s).label) + '</small>' +
+        '</div>';
+    }).join('');
+
+    marker.bindPopup(
+      '<div class="map-popup-title">' +
+      safe(title) + '</div>' +
+      '<div class="map-popup-line">' +
+      safe(first.district || '') +
+      ' · ' + items.length +
+      (items.length === 1 ? ' session' : ' sessions') +
+      '</div>' +
+      '<div style="max-height:220px;overflow-y:auto">' +
+      details + '</div>' +
+      (names.length > 1
+        ? '<small>Different venues share this mapped coordinate.</small>'
+        : ''),
+      {maxWidth:300}
+    );
+
+    marker.bindTooltip(safe(title), {
+      direction: 'top',
+      sticky: true
     });
-  }
+
+    homeLayer.addLayer(marker);
+  });
+
+  $('homeMapDescription').textContent =
+    points.length
+    ? 'Each coloured dot represents a mapped location. Click to view its training sessions. Some locations host multiple sessions.'
+    : 'No published coordinates available yet.';
+}
+
 
   if (!homeMap) {
     homeMap = L.map('leafletHomeMap', {
