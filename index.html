@@ -2049,5 +2049,437 @@ load();if(typeof google!=='undefined'&&google.script&&google.script.run){setInte
 })();
 </script>
 <!-- End NYFA Modern Filter Chips -->
+<!-- NYFA National Dashboard Presentation Mode | v1.0 | self-contained -->
+<style id="nyfa-presentation-styles">
+  .nyfa-present-launch {
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    border:1px solid #0e958c;border-radius:10px;background:#0d877e;color:white;
+    padding:10px 13px;font:800 12px/1.2 'Manrope',sans-serif;
+    cursor:pointer;white-space:nowrap;
+    box-shadow:0 3px 12px rgba(7,115,104,.13);
+    transition:background .16s ease,transform .16s ease;
+  }
+  .nyfa-present-launch:hover{background:#096d68;transform:translateY(-1px)}
+  .nyfa-present-launch:focus-visible{outline:3px solid #71d8c7;outline-offset:2px}
+  .nyfa-present-launch svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .nyfa-present-hero{margin-left:8px}
+  @media(max-width:820px){
+    .nyfa-present-launch{padding:9px;min-width:35px}
+    .nyfa-present-launch .nyfa-present-launch-label{display:none}
+    .nyfa-present-hero{display:none}
+  }
+  @media(max-width:460px){.nyfa-present-launch{min-width:34px;padding:8px}}
+  body.nyfa-presenting{overflow:hidden!important}
+  #nyfa-presentation[hidden],#nyfa-presentation .nyfa-pres-slide[hidden]{display:none!important}
+  #nyfa-presentation,#nyfa-presentation *{box-sizing:border-box}
+  #nyfa-presentation{
+    position:fixed;inset:0;z-index:500001;width:100vw;height:100vh;height:100dvh;
+    margin:0;padding:0;background:#0d2535;color:#e9f7f5;
+    display:flex;flex-direction:column;overflow:hidden;
+    font-family:'DM Sans',sans-serif;text-align:left;
+    isolation:isolate;
+  }
+  #nyfa-presentation:before{
+    content:'';position:absolute;inset:0 0 auto;pointer-events:none;height:460px;
+    background:radial-gradient(ellipse at 75% 0%,rgba(19,172,155,.17),transparent 58%);
+    z-index:-1;
+  }
+  #nyfa-presentation .nyfa-pres-header{
+    flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:18px;
+    padding:16px clamp(18px,3vw,48px);border-bottom:1px solid rgba(206,242,234,.13);
+    background:rgba(10,29,43,.75);
+  }
+  #nyfa-presentation .nyfa-pres-brand{min-width:0;display:flex;align-items:center;gap:12px}
+  #nyfa-presentation .nyfa-pres-emblem{
+    width:42px;height:42px;border-radius:12px;border:1px solid #3b9d98;
+    background:#163e4d;display:grid;place-items:center;font:800 20px/1 'Manrope',sans-serif;
+    color:#8df2da;flex:none;
+  }
+  #nyfa-presentation .nyfa-pres-eyebrow{font:800 10px/1.4 'Manrope',sans-serif;letter-spacing:1.8px;text-transform:uppercase;color:#8adcd2}
+  #nyfa-presentation .nyfa-pres-brand-title{font:800 clamp(13px,1.4vw,19px)/1.4 'Manrope',sans-serif;letter-spacing:-.3px;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #nyfa-presentation .nyfa-pres-header-actions{display:flex;align-items:center;gap:9px;flex:none}
+  #nyfa-presentation .nyfa-pres-button{
+    border:1px solid rgba(202,239,235,.28);border-radius:10px;background:#173b4b;color:#eaf9f5;
+    padding:9px 13px;font:800 11px/1.4 'Manrope',sans-serif;cursor:pointer;
+  }
+  #nyfa-presentation .nyfa-pres-button:hover{background:#235463}
+  #nyfa-presentation .nyfa-pres-button:focus-visible,
+  #nyfa-presentation .nyfa-pres-tab:focus-visible{
+    outline:3px solid #a6f5db;outline-offset:3px;
+  }
+  #nyfa-presentation .nyfa-pres-close{background:#e6faf5;color:#123b48;border-color:transparent}
+  #nyfa-presentation .nyfa-pres-close:hover{background:#a9eddf}
+  #nyfa-presentation .nyfa-pres-main{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-color:#446474 #0d2535}
+  #nyfa-presentation .nyfa-pres-slide{max-width:1680px;margin:0 auto;width:100%;padding:clamp(20px,2.6vw,40px) clamp(20px,3.6vw,62px) 45px;}
+  #nyfa-presentation .nyfa-pres-kicker{font:800 10px/1.5 'Manrope',sans-serif;letter-spacing:2px;text-transform:uppercase;color:#80d9cf}
+  #nyfa-presentation .nyfa-pres-title{font:800 clamp(25px,3vw,43px)/1.2 'Manrope',sans-serif;letter-spacing:-1.3px;color:#fff;margin:8px 0 5px}
+  #nyfa-presentation .nyfa-pres-sub{color:#abc8d1;font-size:clamp(12px,1.1vw,15px);line-height:1.6;margin:0 0 24px;max-width:840px}
+  #nyfa-presentation .nyfa-pres-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:13px}
+  #nyfa-presentation .nyfa-pres-kpi{
+    background:#fafdff;border:1px solid #d4e5e9;border-radius:16px;
+    min-width:0;padding:clamp(14px,2vw,24px);box-shadow:0 8px 20px #08172516;
+  }
+  #nyfa-presentation .nyfa-pres-kpi[data-accent="true"]{background:#e5f8f3;border-color:#9bdfd2}
+  #nyfa-presentation .nyfa-pres-kpi-label{font:800 11px/1.5 'Manrope',sans-serif;color:#526f7e}
+  #nyfa-presentation .nyfa-pres-kpi-value{font:800 clamp(23px,3vw,42px)/1.25 'Manrope',sans-serif;color:#123e50;letter-spacing:-1.4px;margin:14px 0 8px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+  #nyfa-presentation .nyfa-pres-kpi[data-accent="true"] .nyfa-pres-kpi-value{color:#087f76}
+  #nyfa-presentation .nyfa-pres-kpi-help{font:500 11px/1.5 'DM Sans',sans-serif;color:#7793a1}
+  #nyfa-presentation .nyfa-pres-progress-card{
+    display:grid;grid-template-columns:minmax(160px,.42fr) minmax(0,1.58fr);align-items:center;gap:28px;
+    margin-top:21px;padding:clamp(22px,2.5vw,34px);
+    background:linear-gradient(120deg,#153c4b,#164a53);border:1px solid #316878;border-radius:20px;
+  }
+  #nyfa-presentation .nyfa-pres-progress-value{font:800 clamp(46px,6vw,86px)/1 'Manrope',sans-serif;color:#90efdb;letter-spacing:-2px;font-variant-numeric:tabular-nums}
+  #nyfa-presentation .nyfa-pres-progress-hint{font:700 11px/1.5 'Manrope',sans-serif;color:#b3d4d6;margin-top:10px}
+  #nyfa-presentation .nyfa-pres-progress-title{font:800 clamp(17px,1.8vw,25px)/1.3 'Manrope',sans-serif;color:#f5fffe}
+  #nyfa-presentation .nyfa-pres-progress-track{margin:19px 0 13px;height:18px;border-radius:20px;background:#315e67;overflow:hidden}
+  #nyfa-presentation .nyfa-pres-progress-fill{height:100%;width:0;background:linear-gradient(90deg,#12aa99,#7deacb);border-radius:20px;transition:width .8s ease}
+  #nyfa-presentation .nyfa-pres-progress-desc{font-size:12px;line-height:1.65;color:#c9e7e5}
+  #nyfa-presentation .nyfa-pres-chart-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,.85fr);gap:16px;align-items:start}
+  #nyfa-presentation .nyfa-pres-card{border:1px solid #d8e8eb;background:#fbfefe;border-radius:17px;padding:clamp(18px,2vw,27px);color:#274454;min-width:0}
+  #nyfa-presentation .nyfa-pres-card-title{font:800 17px/1.4 'Manrope',sans-serif;color:#193e51;margin-bottom:6px}
+  #nyfa-presentation .nyfa-pres-card-note{font:500 11px/1.6 'DM Sans',sans-serif;color:#698797;margin-bottom:20px}
+  #nyfa-presentation .nyfa-pres-chart-row{display:grid;grid-template-columns:minmax(102px,.92fr) minmax(75px,2fr) 56px;align-items:center;gap:12px;margin:12px 0}
+  #nyfa-presentation .nyfa-pres-chart-name{font:800 12px/1.4 'Manrope',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#2d4c60}
+  #nyfa-presentation .nyfa-pres-chart-track{height:13px;border-radius:10px;background:#e4f0f1;overflow:hidden}
+  #nyfa-presentation .nyfa-pres-chart-fill{height:100%;background:linear-gradient(90deg,#008c83,#53cbb1);border-radius:10px}
+  #nyfa-presentation .nyfa-pres-chart-pct{text-align:right;font:800 11px 'Manrope',sans-serif;color:#1a6f6b}
+  #nyfa-presentation .nyfa-pres-insight{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid #e9f0f2}
+  #nyfa-presentation .nyfa-pres-insight:last-child{border-bottom:0}
+  #nyfa-presentation .nyfa-pres-insight-symbol{width:32px;height:32px;border-radius:10px;background:#e5f7f3;color:#09897c;display:grid;place-items:center;flex:none;font-weight:800}
+  #nyfa-presentation .nyfa-pres-insight-title{font:800 12px/1.5 'Manrope',sans-serif;color:#2c4b5d}
+  #nyfa-presentation .nyfa-pres-insight-note{font:500 10px/1.5 'DM Sans',sans-serif;color:#728b9b;margin-top:3px}
+  #nyfa-presentation .nyfa-pres-map-slot .home-map-panel{margin:0;box-shadow:0 12px 40px rgba(4,22,32,.18);border-radius:18px;padding:18px;background:#fff}
+  #nyfa-presentation .nyfa-pres-map-slot .home-map-panel .panel-h{display:none!important}
+  #nyfa-presentation .nyfa-pres-map-slot .home-map-grid{grid-template-columns:minmax(0,2.2fr) minmax(210px,.63fr)!important}
+  #nyfa-presentation .nyfa-pres-map-slot #leafletHomeMap{height:clamp(365px,calc(100dvh - 285px),790px)!important;min-height:365px!important;}
+  #nyfa-presentation .nyfa-pres-map-slot .nyfa-expand-home-map{display:none!important}
+  #nyfa-presentation .nyfa-pres-map-slot .home-map-side{background:#f4faf9;border-radius:13px}
+  #nyfa-presentation .nyfa-pres-map-slot .map-disclaimer{color:#5d7987}
+  #nyfa-presentation .nyfa-pres-muted{font-size:13px;line-height:1.7;color:#718898}
+  #nyfa-presentation .nyfa-pres-footer{
+    flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;gap:15px;
+    border-top:1px solid rgba(203,242,231,.12);padding:12px clamp(18px,3vw,48px);
+    background:#0b2030;
+  }
+  #nyfa-presentation .nyfa-pres-source{font:600 10px/1.5 'DM Sans',sans-serif;color:#95b6bd;max-width:42%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #nyfa-presentation .nyfa-pres-steps{display:flex;align-items:center;gap:8px}
+  #nyfa-presentation .nyfa-pres-tab{background:#203f4e;color:#cfe9e7;border:1px solid #416271;border-radius:9px;padding:9px 12px;font:800 11px 'Manrope',sans-serif;cursor:pointer}
+  #nyfa-presentation .nyfa-pres-tab[aria-current="step"]{background:#dffaf4;color:#0d5450;border-color:#dffaf4}
+  #nyfa-presentation .nyfa-pres-tab:hover{border-color:#8ed6cb}
+  #nyfa-presentation .nyfa-pres-footer-counter{color:#9cc9cb;font-size:11px;font-weight:700;min-width:40px;text-align:right}
+  #nyfa-presentation .nyfa-pres-button:disabled{opacity:.4;cursor:not-allowed}
+  @media(max-width:1100px){
+    #nyfa-presentation .nyfa-pres-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+    #nyfa-presentation .nyfa-pres-chart-grid{grid-template-columns:1fr}
+    #nyfa-presentation .nyfa-pres-map-slot .home-map-grid{grid-template-columns:1fr!important}
+    #nyfa-presentation .nyfa-pres-map-slot #leafletHomeMap{height:440px!important}
+  }
+  @media(max-width:640px){
+    #nyfa-presentation .nyfa-pres-header{padding:11px 13px}
+    #nyfa-presentation .nyfa-pres-emblem{width:34px;height:34px;font-size:17px}
+    #nyfa-presentation .nyfa-pres-eyebrow{font-size:8px;letter-spacing:1px}
+    #nyfa-presentation .nyfa-pres-brand-title{font-size:12px}
+    #nyfa-presentation .nyfa-pres-header-actions{gap:5px}
+    #nyfa-presentation .nyfa-pres-button{font-size:10px;padding:8px}
+    #nyfa-presentation .nyfa-pres-refresh-label{display:none}
+    #nyfa-presentation .nyfa-pres-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+    #nyfa-presentation .nyfa-pres-kpi{padding:12px;min-height:110px}
+    #nyfa-presentation .nyfa-pres-kpi-value{font-size:25px;margin:8px 0 5px}
+    #nyfa-presentation .nyfa-pres-progress-card{grid-template-columns:1fr;gap:16px}
+    #nyfa-presentation .nyfa-pres-progress-value{font-size:52px}
+    #nyfa-presentation .nyfa-pres-slide{padding:21px 13px 35px}
+    #nyfa-presentation .nyfa-pres-footer{padding:9px 10px}
+    #nyfa-presentation .nyfa-pres-source{display:none}
+    #nyfa-presentation .nyfa-pres-steps{gap:4px}
+    #nyfa-presentation .nyfa-pres-tab{font-size:10px;padding:8px}
+    #nyfa-presentation .nyfa-pres-map-slot #leafletHomeMap{height:52vh!important;min-height:315px!important}
+    #nyfa-presentation .nyfa-pres-map-slot .home-map-panel{padding:10px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    #nyfa-presentation *{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+    .nyfa-present-launch{transition:none!important}
+  }
+</style>
+<script id="nyfa-presentation-script">
+(function () {
+  'use strict';
+  if (window.__NYFA_PRESENTATION_V1__) return;
+  window.__NYFA_PRESENTATION_V1__ = true;
+
+  function get(id) { return document.getElementById(id); }
+  function read(id) { var e=get(id); return e ? String(e.textContent || '').trim() : '—'; }
+  function node(tag, className, textValue) {
+    var n=document.createElement(tag);
+    if(className)n.className=className;
+    if(textValue !== undefined)n.textContent=String(textValue);
+    return n;
+  }
+  function init() {
+    var overview=get('sec-overview'), refresh=get('refreshBtn');
+    if (!overview || !refresh || get('nyfa-presentation')) return;
+
+    var icon='<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 3H4a1 1 0 0 0-1 1v4m13-5h4a1 1 0 0 1 1 1v4M3 16v4a1 1 0 0 0 1 1h4m13-5v4a1 1 0 0 1-1 1h-4"/></svg>';
+    var openButton=node('button','nyfa-present-launch');
+    openButton.type='button';openButton.id='nyfa-present-launch';
+    openButton.setAttribute('aria-label','Present national dashboard full screen');
+    openButton.innerHTML=icon+'<span class="nyfa-present-launch-label">Present</span>';
+    refresh.insertAdjacentElement('afterend',openButton);
+
+    var root=node('div');root.id='nyfa-presentation';root.hidden=true;
+    root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');
+    root.setAttribute('aria-label','National First Aid Programme presentation');
+    root.tabIndex=-1;
+    root.innerHTML=`
+      <header class="nyfa-pres-header">
+        <div class="nyfa-pres-brand">
+          <span class="nyfa-pres-emblem" aria-hidden="true">✚</span>
+          <div><div class="nyfa-pres-eyebrow">Ministry of Health · Sri Lanka</div>
+            <div class="nyfa-pres-brand-title">National Youth First Aid Programme</div></div>
+        </div>
+        <div class="nyfa-pres-header-actions">
+          <button type="button" class="nyfa-pres-button" id="nyfa-pres-refresh" title="Refresh dashboard data">↻ <span class="nyfa-pres-refresh-label">Refresh data</span></button>
+          <button type="button" class="nyfa-pres-button nyfa-pres-close" id="nyfa-pres-exit">✕ Exit</button>
+        </div>
+      </header>
+      <div class="nyfa-pres-main" id="nyfa-pres-main">
+        <section class="nyfa-pres-slide" id="nyfa-pres-slide-0">
+          <div class="nyfa-pres-kicker">National snapshot · Verified reporting</div>
+          <h1 class="nyfa-pres-title">National programme overview</h1>
+          <p class="nyfa-pres-sub">Current national training figures, drawn directly from the existing website dashboard.</p>
+          <div class="nyfa-pres-kpis" id="nyfa-pres-kpis"></div>
+          <div class="nyfa-pres-progress-card">
+            <div><div class="nyfa-pres-progress-value" id="nyfa-pres-pct">—</div>
+              <div class="nyfa-pres-progress-hint">OF NATIONAL YOUTH TARGET ACHIEVED</div></div>
+            <div><div class="nyfa-pres-progress-title">Progress towards the national training target</div>
+              <div class="nyfa-pres-progress-track" aria-label="National training progress"><div class="nyfa-pres-progress-fill" id="nyfa-pres-fill"></div></div>
+              <div class="nyfa-pres-progress-desc" id="nyfa-pres-progress-text">Awaiting programme results.</div>
+            </div>
+          </div>
+        </section>
+        <section class="nyfa-pres-slide" id="nyfa-pres-slide-1" hidden>
+          <div class="nyfa-pres-kicker">District comparison · Reporting areas</div>
+          <h1 class="nyfa-pres-title">Where training is progressing</h1>
+          <p class="nyfa-pres-sub">Leading reporting areas by achieved share of their own targets. Missing targets are not estimated.</p>
+          <div class="nyfa-pres-chart-grid">
+            <div class="nyfa-pres-card"><div class="nyfa-pres-card-title">Target achievement by reporting area</div>
+              <div class="nyfa-pres-card-note">Up to nine areas with reported targets and attendance, as displayed by the District Performance dashboard.</div>
+              <div id="nyfa-pres-chart"></div>
+            </div>
+            <div class="nyfa-pres-card"><div class="nyfa-pres-card-title">Reporting insights</div>
+              <div class="nyfa-pres-card-note">Data availability and upcoming session information</div>
+              <div id="nyfa-pres-insights"></div>
+            </div>
+          </div>
+        </section>
+        <section class="nyfa-pres-slide" id="nyfa-pres-slide-2" hidden>
+          <div class="nyfa-pres-kicker">Geographic overview · Published coordinates</div>
+          <h1 class="nyfa-pres-title">Training across Sri Lanka</h1>
+          <p class="nyfa-pres-sub">Interactive venue map. Click the markers to view sessions; use + / − to zoom and drag to explore.</p>
+          <div class="nyfa-pres-map-slot" id="nyfa-pres-map-slot"></div>
+        </section>
+      </div>
+      <footer class="nyfa-pres-footer">
+        <span class="nyfa-pres-source" id="nyfa-pres-source">Dashboard data source</span>
+        <nav class="nyfa-pres-steps" aria-label="Presentation slides">
+          <button type="button" class="nyfa-pres-tab" data-pres-slide="0" aria-current="step">Overview</button>
+          <button type="button" class="nyfa-pres-tab" data-pres-slide="1">Districts</button>
+          <button type="button" class="nyfa-pres-tab" data-pres-slide="2">Map</button>
+        </nav>
+        <div class="nyfa-pres-header-actions">
+          <button type="button" class="nyfa-pres-button" id="nyfa-pres-prev" aria-label="Previous slide" disabled>←</button>
+          <span class="nyfa-pres-footer-counter" id="nyfa-pres-counter">1 / 3</span>
+          <button type="button" class="nyfa-pres-button" id="nyfa-pres-next" aria-label="Next slide">→</button>
+        </div>
+      </footer>`;
+    overview.appendChild(root);
+
+    var specs=[
+      {id:'kTargetYouth',label:'Target youth',hint:'National programme target'},
+      {id:'kYouthTrained',label:'Youth trained',hint:'Reported trainee attendance',accent:true},
+      {id:'kCompleted',label:'Sessions completed',hint:'Confirmed completion records'},
+      {id:'kCoverage',label:'Target achieved',hint:'Trained ÷ programme target',accent:true},
+      {id:'kScheduled',label:'Scheduled sessions',hint:'Dated sessions not confirmed completed'}
+    ];
+    var kpis=get('nyfa-pres-kpis');
+    specs.forEach(function(spec){
+      var card=node('div','nyfa-pres-kpi');
+      if(spec.accent)card.setAttribute('data-accent','true');
+      card.appendChild(node('div','nyfa-pres-kpi-label',spec.label));
+      var value=node('div','nyfa-pres-kpi-value','—');value.dataset.sourceId=spec.id;card.appendChild(value);
+      card.appendChild(node('div','nyfa-pres-kpi-help',spec.hint));kpis.appendChild(card);
+    });
+
+    var state={active:false,slide:0,previousTab:'overview',scroll:0,focus:null,
+      mapPanel:null,mapAnchor:null,fullscreen:false,refreshFrame:0};
+    function updateSnapshot(){
+      if(!state.active)return;
+      root.querySelectorAll('[data-source-id]').forEach(function(e){e.textContent=read(e.dataset.sourceId);});
+      var pct=read('progressPct');
+      get('nyfa-pres-pct').textContent=pct;
+      var numerical=parseFloat(pct.replace('%',''));
+      get('nyfa-pres-fill').style.width=Number.isFinite(numerical)?
+        Math.max(0,Math.min(100,numerical))+'%':'0%';
+      var trained=read('progressTrained'), target=read('progressTarget');
+      get('nyfa-pres-progress-text').textContent=
+        'Youth trained: '+trained+'  ·  National target: '+target+
+        '. Only recorded training results count towards achievement.';
+      var source=read('dashboardSource'), sync=read('syncState');
+      var foot=get('nyfa-pres-source');
+      foot.textContent=(source&&source!=='—'?source:'Dashboard source not available')+' · '+sync;
+      foot.title=foot.textContent;
+    }
+    function scheduleSnapshot(){
+      if(state.refreshFrame)cancelAnimationFrame(state.refreshFrame);
+      state.refreshFrame=requestAnimationFrame(function(){
+        state.refreshFrame=0;updateSnapshot();
+        if(state.active&&state.slide===1)buildDistricts();
+      });
+    }
+    function prepDistrictData(){
+      // Use the original renderer, not new calculations. Restore overview immediately.
+      var districtNav=document.querySelector('.navbtn[data-section="districts"]');
+      var overviewNav=document.querySelector('.navbtn[data-section="overview"]');
+      if(!districtNav||!overviewNav)return;
+      districtNav.click();overviewNav.click();
+    }
+    function buildDistricts(){
+      var holder=get('nyfa-pres-chart');holder.replaceChildren();
+      var src=get('dpChart');
+      var rows=src?src.querySelectorAll('.dp-chart-row'):[];
+      if(!rows.length){holder.appendChild(node('p','nyfa-pres-muted',
+        (src&&src.textContent.trim())||'District figures will appear when live reporting data is available.'));}
+      else Array.prototype.forEach.call(rows,function(row){
+        var name=row.querySelector('.dp-chart-name'),fill=row.querySelector('.dp-chart-fill'),pct=row.querySelector('.dp-chart-value');
+        if(!name||!pct)return;
+        var line=node('div','nyfa-pres-chart-row');
+        var n=node('span','nyfa-pres-chart-name',name.textContent.trim());n.title=n.textContent;line.appendChild(n);
+        var track=node('div','nyfa-pres-chart-track'),bar=node('div','nyfa-pres-chart-fill');
+        var w=fill?parseFloat(fill.style.width):0;
+        bar.style.width=(Number.isFinite(w)?Math.max(0,Math.min(100,w)):0)+'%';
+        track.appendChild(bar);line.appendChild(track);line.appendChild(node('span','nyfa-pres-chart-pct',pct.textContent.trim()));
+        holder.appendChild(line);
+      });
+      var insights=get('nyfa-pres-insights');insights.replaceChildren();
+      var source=get('dpInsights');var cards=source?source.querySelectorAll('.dp-insight'):[];
+      if(!cards.length){insights.appendChild(node('p','nyfa-pres-muted','Reporting insights will appear when district data becomes available.'));}
+      else Array.prototype.forEach.call(cards,function(card){
+        var icon=card.querySelector('.dp-insight-symbol'),title=card.querySelector('.dp-insight-text b'),info=card.querySelector('.dp-insight-text span');
+        var entry=node('div','nyfa-pres-insight');
+        entry.appendChild(node('span','nyfa-pres-insight-symbol',icon?icon.textContent.trim():'•'));
+        var copy=node('div');copy.appendChild(node('div','nyfa-pres-insight-title',title?title.textContent.trim():''));
+        copy.appendChild(node('div','nyfa-pres-insight-note',info?info.textContent.trim():''));
+        entry.appendChild(copy);insights.appendChild(entry);
+      });
+    }
+    function notifyMapResize(){
+      requestAnimationFrame(function(){
+        window.dispatchEvent(new Event('resize'));
+        setTimeout(function(){window.dispatchEvent(new Event('resize'));},140);
+      });
+    }
+    function mountMap(){
+      var panel=overview.querySelector('.home-map-panel');
+      var slot=get('nyfa-pres-map-slot');
+      if(!panel||!slot)return;
+      state.mapPanel=panel;
+      if(!state.mapAnchor){state.mapAnchor=document.createComment('NYFA home map position');panel.parentNode.insertBefore(state.mapAnchor,panel);}
+      slot.appendChild(panel);
+      notifyMapResize();
+    }
+    function restoreMap(){
+      if(state.mapPanel&&state.mapAnchor&&state.mapAnchor.parentNode){
+        state.mapAnchor.parentNode.insertBefore(state.mapPanel,state.mapAnchor);
+        state.mapAnchor.parentNode.removeChild(state.mapAnchor);
+      }
+      state.mapAnchor=null;state.mapPanel=null;notifyMapResize();
+    }
+    function showSlide(idx){
+      if(!state.active)return;
+      idx=Math.max(0,Math.min(2,idx));
+      if(state.slide===2&&idx!==2)restoreMap();
+      state.slide=idx;
+      for(var i=0;i<3;i++)get('nyfa-pres-slide-'+i).hidden=(i!==idx);
+      root.querySelectorAll('[data-pres-slide]').forEach(function(button){
+        if(Number(button.dataset.presSlide)===idx)button.setAttribute('aria-current','step');
+        else button.removeAttribute('aria-current');
+      });
+      get('nyfa-pres-prev').disabled=idx===0;
+      get('nyfa-pres-next').disabled=idx===2;
+      get('nyfa-pres-counter').textContent=(idx+1)+' / 3';
+      get('nyfa-pres-main').scrollTop=0;
+      if(idx===1){prepDistrictData();buildDistricts();}
+      if(idx===2)mountMap();
+      updateSnapshot();
+    }
+    function start(){
+      if(state.active)return;
+      state.previousTab=(document.querySelector('.section.active')||{}).id||'sec-overview';
+      state.scroll=window.scrollY||0;state.focus=document.activeElement;
+      var overviewNav=document.querySelector('.navbtn[data-section="overview"]');
+      if(overviewNav&&!overview.classList.contains('active'))overviewNav.click();
+      root.hidden=false;
+      state.active=true;state.slide=0;
+      document.body.classList.add('nyfa-presenting');
+      updateSnapshot();showSlide(0);root.focus();
+      // Native browser fullscreen is best for projectors; CSS overlay is the fallback.
+      if(root.requestFullscreen){
+        try{var result=root.requestFullscreen();
+          if(result&&result.then)result.then(function(){if(state.active)state.fullscreen=true;}).catch(function(){});
+        }catch(e){}
+      }
+    }
+    function stop(){
+      if(!state.active)return;
+      state.active=false;
+      restoreMap();root.hidden=true;
+      document.body.classList.remove('nyfa-presenting');
+      if(document.fullscreenElement===root&&document.exitFullscreen){
+        try{document.exitFullscreen().catch(function(){});}catch(e){}
+      }
+      state.fullscreen=false;
+      var prev=String(state.previousTab).replace(/^sec-/,'');
+      if(prev!=='overview'){
+        var oldTab=document.querySelector('.navbtn[data-section="'+prev+'"]');
+        if(oldTab)oldTab.click();
+      }
+      window.scrollTo(0,state.scroll);
+      if(state.focus&&document.contains(state.focus)&&typeof state.focus.focus==='function')state.focus.focus();
+      else openButton.focus();
+    }
+    openButton.addEventListener('click',start);
+    get('nyfa-pres-exit').addEventListener('click',stop);
+    get('nyfa-pres-refresh').addEventListener('click',function(){refresh.click();});
+    get('nyfa-pres-prev').addEventListener('click',function(){showSlide(state.slide-1);});
+    get('nyfa-pres-next').addEventListener('click',function(){showSlide(state.slide+1);});
+    root.addEventListener('click',function(e){
+      var b=e.target.closest('[data-pres-slide]');
+      if(b)showSlide(Number(b.dataset.presSlide));
+    });
+    document.addEventListener('keydown',function(e){
+      if(!state.active)return;
+      if(e.key==='Escape'){e.preventDefault();stop();}
+      else if(e.key==='ArrowRight'&&!e.altKey){e.preventDefault();showSlide(state.slide+1);}
+      else if(e.key==='ArrowLeft'&&!e.altKey){e.preventDefault();showSlide(state.slide-1);}
+      else if(e.key==='Tab'){
+        var buttons=Array.from(root.querySelectorAll('button:not(:disabled):not([hidden]),a[href]')).filter(function(n){return n.getClientRects().length>0;});
+        if(!buttons.length)return;
+        var first=buttons[0],last=buttons[buttons.length-1];
+        if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+        else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+      }
+    });
+    document.addEventListener('fullscreenchange',function(){
+      if(state.active&&state.fullscreen&&!document.fullscreenElement)stop();
+    });
+    ['kTargetYouth','kYouthTrained','kCompleted','kCoverage','kScheduled','progressPct',
+     'progressTrained','progressTarget','dashboardSource','syncState','dpChart','dpInsights']
+     .forEach(function(id){var target=get(id);if(target)new MutationObserver(scheduleSnapshot).observe(target,{childList:true,characterData:true,subtree:true});});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
+  else init();
+})();
+</script>
+<!-- End NYFA National Dashboard Presentation Mode -->
 </body>
 </html>
