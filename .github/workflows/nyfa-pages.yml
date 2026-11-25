@@ -15,11 +15,10 @@ permissions:
 concurrency:
   group: nyfa-pages
   cancel-in-progress: false
-
 jobs:
   build:
-runs-on: ubuntu-24.04
-timeout-minutes: 25
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
     steps:
       - name: Check out public website files
         uses: actions/checkout@v4
@@ -91,8 +90,8 @@ timeout-minutes: 25
           path: ./public
 
   deploy:
-runs-on: ubuntu-24.04
-needs: build
+    runs-on: ubuntu-24.04
+    needs: build
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
