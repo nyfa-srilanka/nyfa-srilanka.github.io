@@ -1831,5 +1831,223 @@ load();if(typeof google!=='undefined'&&google.script&&google.script.run){setInte
 <script src="./nyfa-district-gallery.js?v=2" defer></script>
 <script src="./nyfa-home-photo-banner.js" defer></script>
 <script src="./nyfa-district-explorer.js" defer></script>
+<!-- NYFA Modern Filter Chips | Presentation only | v1.0 -->
+<style id="nyfa-filter-chip-styles">
+  .nyfa-filter-strip {
+    display:flex; flex-wrap:wrap; align-items:center; gap:9px 14px;
+    padding:12px 14px; margin:12px 0 16px;
+    border:1px solid #dbeae7; border-radius:13px;
+    background:linear-gradient(110deg,#f7fbfa,#fff);
+    font:600 12px/1.5 'DM Sans',sans-serif;
+    color:#537080;
+  }
+  .nyfa-filter-count {
+    display:inline-flex; align-items:center; gap:7px;
+    white-space:nowrap; color:#184b58; font-weight:800;
+    font-variant-numeric:tabular-nums;
+  }
+  .nyfa-filter-count::before {
+    content:''; width:8px; height:8px; border-radius:50%;
+    background:#0da391; box-shadow:0 0 0 3px #dff5ed;
+  }
+  .nyfa-filter-tags { display:flex; flex:1; flex-wrap:wrap; gap:7px; align-items:center; min-width:0; }
+  .nyfa-filter-empty { color:#8497a4; font-weight:500; font-size:11px; }
+  .nyfa-filter-chip {
+    display:inline-flex; align-items:center; gap:9px;
+    max-width:min(100%,320px); min-height:30px; padding:5px 9px 5px 11px;
+    background:#e8f7f3; color:#08776d; border:1px solid #bae5dc;
+    border-radius:999px; font:700 11px/1.3 'DM Sans',sans-serif;
+    cursor:pointer; text-align:left;
+    transition:background .18s ease,transform .18s ease,border-color .18s ease;
+  }
+  .nyfa-filter-chip:hover { background:#d8f2eb; border-color:#85d0bf; transform:translateY(-1px); }
+  .nyfa-filter-chip:focus-visible,.nyfa-filter-clear:focus-visible {
+    outline:2px solid #087f77; outline-offset:3px;
+  }
+  .nyfa-filter-chip-label { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .nyfa-filter-x {
+    flex:none; display:grid; place-items:center;
+    width:17px; height:17px; background:#cbeee6; border-radius:50%;
+    color:#0b736c; font:800 15px/1 Arial,sans-serif;
+  }
+  .nyfa-filter-clear {
+    margin-left:auto; padding:6px 9px;
+    border:0; background:transparent; color:#5e7584;
+    font:800 11px/1.3 'DM Sans',sans-serif;
+    text-decoration:underline; text-underline-offset:3px;
+    white-space:nowrap; cursor:pointer;
+  }
+  .nyfa-filter-clear:hover { color:#0a8579; }
+  .nyfa-filter-clear[hidden],.nyfa-filter-empty[hidden] { display:none!important; }
+  @media(max-width:650px) {
+    .nyfa-filter-strip {padding:11px; gap:8px;}
+    .nyfa-filter-tags {order:3; flex-basis:100%;}
+    .nyfa-filter-clear {margin-left:auto;}
+    .nyfa-filter-chip {max-width:100%;}
+  }
+  @media(prefers-reduced-motion:reduce) {
+    .nyfa-filter-chip {transition:none!important;}
+    .nyfa-filter-chip:hover {transform:none!important;}
+  }
+</style>
+<script id="nyfa-filter-chip-script">
+(function () {
+  'use strict';
+  if (window.__NYFA_FILTER_CHIPS__) return;
+  window.__NYFA_FILTER_CHIPS__ = true;
+
+  // Each chip reflects an existing site filter. No separate filter logic.
+  var views = [
+    {section:'sessions', anchor:'.filters', count:'count-sessions', noun:'sessions', fields:[
+      ['search-sessions','Search'],['district-sessions','District'],['status-sessions','Status']
+    ]},
+    {section:'locations', anchor:'.map-toolbar', count:'locationCount', noun:'sessions', reset:'mapReset', fields:[
+      ['mapSearch','Search'],['district-locations','District'],['mapStatus','Status'],['mapMappedOnly','Mapped only']
+    ]},
+    {section:'districts', anchor:'.dp-toolbar', count:'dpCount', noun:'reporting areas', fields:[
+      ['dpArea','Area'],['dpSearch','Search']
+    ]},
+    {section:'calendar', anchor:'.nyfa-cal-filters', count:'nyfa-cal-total', noun:'programmes this month', reset:'nyfa-cal-reset', fields:[
+      ['nyfa-cal-district','District'],['nyfa-cal-cbo','CBO'],['nyfa-cal-status','Status'],
+      ['nyfa-cal-date','Date'],['nyfa-cal-search','Search']
+    ]}
+  ];
+
+  function get(id) { return document.getElementById(id); }
+  function enabled(node) {
+    if (!node) return false;
+    return node.type === 'checkbox' ? node.checked : !!String(node.value || '').trim();
+  }
+  function displayValue(node) {
+    if (node.type === 'checkbox') return 'Yes';
+    if (node.tagName === 'SELECT') {
+      var option = node.options[node.selectedIndex];
+      return option ? option.textContent.trim() : node.value;
+    }
+    if (node.type === 'date' && /^\d{4}-\d{2}-\d{2}$/.test(node.value)) {
+      var d = new Date(node.value + 'T12:00:00');
+      return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    }
+    return String(node.value || '').trim();
+  }
+  function clearField(id) {
+    var node = get(id);
+    if (!node) return;
+    if (node.type === 'checkbox') node.checked = false;
+    else node.value = '';
+    // Notify the website's original filtering logic (including calendar date state).
+    var type = node.tagName === 'SELECT' || node.type === 'checkbox' || node.type === 'date'
+      ? 'change' : 'input';
+    node.dispatchEvent(new Event(type,{bubbles:true}));
+  }
+  var queued = false;
+  function queueUpdate() {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(function () {
+      queued = false;
+      views.forEach(update);
+    });
+  }
+  function clearAll(view) {
+    // Existing reset buttons preserve the calendar's internal selectedDate state.
+    if (view.reset && get(view.reset)) get(view.reset).click();
+    else view.fields.forEach(function (f) {if (enabled(get(f[0]))) clearField(f[0]);});
+    queueUpdate();
+  }
+  function update(view) {
+    if (!view.nodes) return;
+    var existingCount = get(view.count);
+    var raw = existingCount ? String(existingCount.textContent || '') : '';
+    var match = raw.match(/\d[\d,]*/);
+    view.nodes.count.textContent = match
+      ? Number(match[0].replace(/,/g,'')).toLocaleString('en-LK') + ' ' + view.noun
+      : 'Loading results…';
+
+    var tags = view.nodes.tags;
+    tags.replaceChildren();
+    var total = 0;
+    view.fields.forEach(function (f) {
+      var node = get(f[0]);
+      if (!enabled(node)) return;
+      total++;
+      var label = f[1] + ': ' + displayValue(node);
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'nyfa-filter-chip';
+      button.title = 'Remove ' + label;
+      button.setAttribute('aria-label','Remove ' + label + ' filter');
+      var caption = document.createElement('span');
+      caption.className = 'nyfa-filter-chip-label';
+      caption.textContent = label;
+      var x = document.createElement('span');
+      x.className = 'nyfa-filter-x';
+      x.setAttribute('aria-hidden','true');
+      x.textContent = '×';
+      button.appendChild(caption);
+      button.appendChild(x);
+      button.addEventListener('click',function () {clearField(f[0]);queueUpdate();});
+      tags.appendChild(button);
+    });
+    if (total === 0) tags.appendChild(view.nodes.empty);
+    view.nodes.empty.hidden = total > 0;
+    view.nodes.clear.hidden = total === 0;
+  }
+  function mount(view) {
+    var area = get('sec-' + view.section);
+    var toolbar = area && area.querySelector(view.anchor);
+    if (!toolbar || area.querySelector('.nyfa-filter-strip')) return;
+    var strip = document.createElement('div');
+    strip.className = 'nyfa-filter-strip';
+    strip.setAttribute('aria-label','Active filters and matching results');
+    var counter = document.createElement('span');
+    counter.className = 'nyfa-filter-count';
+    counter.setAttribute('aria-live','polite');
+    var tags = document.createElement('div');
+    tags.className = 'nyfa-filter-tags';
+    var empty = document.createElement('span');
+    empty.className = 'nyfa-filter-empty';
+    empty.textContent = 'No active filters';
+    tags.appendChild(empty);
+    var clear = document.createElement('button');
+    clear.type = 'button';
+    clear.className = 'nyfa-filter-clear';
+    clear.textContent = 'Clear all';
+    clear.addEventListener('click',function () {clearAll(view);});
+    strip.appendChild(counter);
+    strip.appendChild(tags);
+    strip.appendChild(clear);
+    toolbar.insertAdjacentElement('afterend',strip);
+    view.nodes = {count:counter,tags:tags,clear:clear,empty:empty};
+
+    // Use the existing dashboard count as the source of truth.
+    var source = get(view.count);
+    if (source && window.MutationObserver) {
+      new MutationObserver(queueUpdate).observe(source,{
+        childList:true, characterData:true, subtree:true
+      });
+    }
+    update(view);
+  }
+  function init() {
+    views.forEach(mount);
+    document.addEventListener('input',function (e) {
+      if (views.some(function(v){return v.fields.some(function(f){return f[0]===e.target.id;});})) queueUpdate();
+    });
+    document.addEventListener('change',function (e) {
+      if (views.some(function(v){return v.fields.some(function(f){return f[0]===e.target.id;});})) queueUpdate();
+    });
+    // Calendar date/day navigation and built-in reset can update inputs in code.
+    document.addEventListener('click',function (e) {
+      if (e.target.closest('#nyfa-cal-reset,#mapReset,[data-cal-day],#nyfa-cal-prev,#nyfa-cal-next,#nyfa-cal-today,[data-dp-select]'))
+        queueUpdate();
+    });
+    queueUpdate();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',init);
+  else init();
+})();
+</script>
+<!-- End NYFA Modern Filter Chips -->
 </body>
 </html>
