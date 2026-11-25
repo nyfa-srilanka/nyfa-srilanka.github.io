@@ -19,6 +19,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - name: Check out public website files
         uses: actions/checkout@v4
@@ -50,6 +51,36 @@ jobs:
             rm -rf public/photo-assets
             printf '%s\n' '{"available":false,"photos":[],"missing":0}' > public/gallery-snapshot.json
           fi
+
+      - name: Validate files, dashboard data and approved image assets
+        run: python3 scripts/reliability_guardian.py build public
+
+      # Test every candidate, including scheduled runs: a failed push must not
+      # be published by the next scheduled synchronisation.
+      - name: Cache browser binaries
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: nyfa-playwright-1.56.0-${{ runner.os }}-${{ runner.arch }}
+
+      - name: Install browser test tools
+        run: |
+          python3 -m venv "$RUNNER_TEMP/nyfa-browser-venv"
+          "$RUNNER_TEMP/nyfa-browser-venv/bin/python" -m pip install --disable-pip-version-check playwright==1.56.0
+          "$RUNNER_TEMP/nyfa-browser-venv/bin/python" -m playwright install --with-deps chromium firefox webkit
+
+      - name: Anonymous cross-browser deployment gate
+        timeout-minutes: 12
+        run: '"$RUNNER_TEMP/nyfa-browser-venv/bin/python" scripts/browser_guardian.py --root public'
+
+      # Retain public approved numerical data only, never past photo assets.
+      - name: Save dashboard-only recovery snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: nyfa-dashboard-recovery-${{ github.run_id }}-${{ github.run_attempt }}
+          path: public/dashboard-snapshot.json
+          retention-days: 7
+          if-no-files-found: error
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
