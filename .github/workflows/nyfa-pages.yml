@@ -1,8 +1,6 @@
 name: NYFA Fast Dashboard Snapshot
 
 on:
-  # GitHub scheduled runs can sometimes be delayed.
-  # Off-the-hour schedule reduces congestion; every 5 minutes.
   schedule:
     - cron: '2-59/5 * * * *'
   workflow_dispatch:
@@ -25,19 +23,33 @@ jobs:
       - name: Check out public website files
         uses: actions/checkout@v4
 
-
-
       - name: Prepare site files
         run: |
           mkdir -p public
-
           cp index.html bridge.js phase1-ui.js smart-map.js home-map-expand.js training-calendar.js nyfa-district-gallery.js nyfa-home-photo-banner.js nyfa-district-explorer.js public/
-
 
       - name: Build up-to-date public data snapshot
         env:
           NYFA_PUBLIC_API_URL: 'https://script.google.com/macros/s/AKfycbw5_o8mL02CWGa3vNILnP4OIe6Mmr_8q7_daVj8VYlvIvMewa9CnhqiS83QmfFSGrCU/exec'
         run: python3 scripts/build_snapshot.py public/dashboard-snapshot.json
+
+      # A gallery outage must not prevent publication of the dashboard figures.
+      - name: Publish approved district photos
+        continue-on-error: true
+        timeout-minutes: 6
+        env:
+          NYFA_PUBLIC_API_URL: 'https://script.google.com/macros/s/AKfycbw5_o8mL02CWGa3vNILnP4OIe6Mmr_8q7_daVj8VYlvIvMewa9CnhqiS83QmfFSGrCU/exec'
+        run: |
+          python3 -m venv "$RUNNER_TEMP/nyfa-gallery-venv"
+          "$RUNNER_TEMP/nyfa-gallery-venv/bin/python" -m pip install --disable-pip-version-check 'Pillow>=11,<13'
+          "$RUNNER_TEMP/nyfa-gallery-venv/bin/python" scripts/build_gallery.py public
+
+      - name: Remove unconfirmed gallery outputs if publishing was interrupted
+        run: |
+          if [ ! -f public/gallery-snapshot.json ]; then
+            rm -rf public/photo-assets
+            printf '%s\n' '{"available":false,"photos":[],"missing":0}' > public/gallery-snapshot.json
+          fi
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
