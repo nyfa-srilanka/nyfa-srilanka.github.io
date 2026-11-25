@@ -1820,7 +1820,261 @@ $('mapMappedOnly').addEventListener('change',renderLocations);
 $('mapCSV').addEventListener('click',mapExportCsv);
 $('mapReset').addEventListener('click',function(){$('district-locations').value='';$('mapStatus').value='';$('mapSearch').value='';$('mapMappedOnly').checked=false;renderLocations();});$('refreshBtn').addEventListener('click',function(){load(true);});$('csv-sessions').addEventListener('click',function(){exportCsv('sessions')});$('mobiletoggle').addEventListener('click',function(){if($('sidebar').classList.contains('open'))closeMobileNav(true);else openMobileNav()});$('sidebarClose').addEventListener('click',function(){closeMobileNav(true)});$('mobileNavBackdrop').addEventListener('click',function(){closeMobileNav(true)});$('modalClose').addEventListener('click',function(){$('overlay').classList.remove('on')});$('overlay').addEventListener('click',function(e){if(e.target===$('overlay'))$('overlay').classList.remove('on')});document.addEventListener('keydown',function(e){if(e.key==='Escape'){$('overlay').classList.remove('on');closeMobileNav(true)}});document.addEventListener('click',function(e){var t=e.target.closest('[data-detail]');if(t)openDetail(t.dataset.detail);var mp=e.target.closest('[data-map-pin]');if(mp)mapZoomToSession(mp.dataset.mapPin);var d=e.target.closest('[data-district]');if(d){setSection('sessions');$('district-sessions').value=d.dataset.district;renderTable('sessions')}var sel=e.target.closest('[data-dp-select]');if(sel){dpSelected=sel.dataset.dpSelect;$('dpSearch').value='';dpRender();document.getElementById('sec-districts').scrollIntoView({behavior:'smooth',block:'start'});}var goto=e.target.closest('[data-dp-see-sessions]');if(goto){setSection('sessions');$('district-sessions').value=goto.dataset.dpSeeSessions;renderTable('sessions');}});
 
+// NYFA National Training Momentum v1.0
+// PASTE INSIDE the existing main <script>, directly ABOVE webWatchHomeMap();
+// Reads ONLY aggregated, completed Session Register data from data.dashboard.momentum.
+// Edit this one date if the official six-month programme starts in another month.
+(function nyfaInstallMomentum() {
+  'use strict';
+  var START_DATE = '2026-11-01'; // Configurable six-month starting date (Sri Lanka).
+  var MONTHS = 6;
+  var prefix = 'nyfa-mtm-';
+  var mounted = false;
+  var mode = 'monthly';
+  var previousFocus = null;
 
+  function by(s) { return document.getElementById(prefix + s); }
+  function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function(c) {
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+  }); }
+  function fmt(n) { return Math.round(Number(n) || 0).toLocaleString('en-LK'); }
+  function date(s) { return new Date(String(s) + 'T00:00:00Z'); }
+  function iso(d) { return d.toISOString().slice(0,10); }
+  function addDays(d,n) { return new Date(d.getTime() + n*86400000); }
+  function addMonths(d,n) {
+    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth()+n, 1));
+  }
+  function label(d) { return d.toLocaleDateString('en-GB',{timeZone:'UTC',month:'short',year:'numeric'}); }
+  function target() {
+    var m = data && data.dashboard && data.dashboard.metrics;
+    var v = m && m.targetYouth && m.targetYouth.value;
+    return typeof v === 'number' && isFinite(v) && v > 0 ? v : null;
+  }
+  function source() {
+    return data && data.dashboard && data.dashboard.momentum || null;
+  }
+  function makePeriods(type) {
+    var start=date(START_DATE), end=addMonths(start, MONTHS), items=[];
+    if (type === 'monthly') {
+      for (var i=0;i<MONTHS;i++) {
+        var s=addMonths(start,i), e=addMonths(start,i+1);
+        items.push({from:iso(s),to:iso(e),name:label(s),short:s.toLocaleDateString('en-GB',{timeZone:'UTC',month:'short'})});
+      }
+    } else {
+      var p=start, week=1;
+      while (p < end) {
+        var next=addDays(p,7);
+        if (next > end) next=end;
+        items.push({from:iso(p),to:iso(next),name:'Week '+week,short:'W'+week});
+        p=next; week++;
+      }
+    }
+    return items;
+  }
+  function series(type) {
+    var periods=makePeriods(type), src=source() || {}, days=Array.isArray(src.days) ? src.days : [];
+    var goal=target(), startMs=date(START_DATE).getTime(), endMs=addMonths(date(START_DATE),MONTHS).getTime();
+    var cumulative=0, counted=0;
+    var rows=periods.map(function(p){
+      var youth=0, sessions=0;
+      days.forEach(function(x){
+        if(x.date >= p.from && x.date < p.to){
+          youth += Math.max(0,Number(x.youth)||0);
+          sessions += Math.max(0,Number(x.sessions)||0);
+        }
+      });
+      cumulative+=youth; counted+=sessions;
+      var due=goal === null ? null : goal * (Math.min(date(p.to).getTime(),endMs)-startMs)/(endMs-startMs);
+      return {name:p.name,short:p.short,youth:youth,sessions:sessions,actual:cumulative,due:due};
+    });
+    var beyond=days.reduce(function(n,x){return n + ((x.date < iso(date(START_DATE)) || x.date >= iso(addMonths(date(START_DATE),MONTHS))) ? (Number(x.sessions)||0) : 0);},0);
+    return {rows:rows, counted:counted, beyond:beyond};
+  }
+  function svgCumulative(rows, goal, type) {
+    var w=880,h=284,l=66,r=28,t=22,b=52, pw=w-l-r, ph=h-t-b;
+    var maxVal=Math.max(1,goal||0);
+    rows.forEach(function(q){maxVal=Math.max(maxVal,q.actual,q.due||0);});
+    maxVal=Math.ceil(maxVal/5)*5;
+    var X=function(i){return l+(rows.length===1?0:i/(rows.length-1))*pw;};
+    var Y=function(v){return t+ph-(v/maxVal)*ph;};
+    var html='';
+    for(var tick=0;tick<=4;tick++) {
+      var val=maxVal*tick/4, yy=Y(val);
+      html+='<line x1="'+l+'" y1="'+yy+'" x2="'+(w-r)+'" y2="'+yy+'" stroke="#e7edf2"/>';
+      html+='<text x="'+(l-12)+'" y="'+(yy+4)+'" text-anchor="end" fill="#718698" font-size="12">'+esc(fmt(val))+'</text>';
+    }
+    if (goal!==null) {
+      html+='<path d="'+rows.map(function(q,i){return (i?'L':'M')+X(i).toFixed(1)+','+Y(q.due).toFixed(1);}).join(' ')+'" fill="none" stroke="#9babc0" stroke-width="3" stroke-dasharray="8 6"/>';
+    }
+    html+='<path d="'+rows.map(function(q,i){return (i?'L':'M')+X(i).toFixed(1)+','+Y(q.actual).toFixed(1);}).join(' ')+'" fill="none" stroke="#0b978c" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>';
+    rows.forEach(function(q,i){
+      var showLabel=type==='monthly'||i%4===0||i===rows.length-1;
+      if(showLabel)html+='<text x="'+X(i)+'" y="'+(h-17)+'" text-anchor="middle" fill="#70859a" font-size="12">'+esc(q.short)+'</text>';
+      html+='<circle cx="'+X(i)+'" cy="'+Y(q.actual)+'" r="'+(type==='monthly'?5:3.3)+'" fill="#0b978c" stroke="white" stroke-width="2"><title>'+esc(q.name+': '+fmt(q.actual)+' cumulative youth trained')+'</title></circle>';
+    });
+    return '<svg class="nyfa-mtm-chart" viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Cumulative verified youth trained compared with an evenly paced six-month target">'+html+'</svg>';
+  }
+  function svgSessions(rows, type) {
+    var w=880,h=176,l=66,r=28,t=16,b=42,ph=h-t-b,pw=w-l-r;
+    var maximum=Math.max(1,Math.max.apply(null,rows.map(function(q){return q.sessions;})));
+    var step=pw/Math.max(1,rows.length),barW=Math.min(62,step*.65),html='';
+    for (var i=0;i<=2;i++) {
+      var yy=t+ph-(ph*i/2);
+      html+='<line x1="'+l+'" y1="'+yy+'" x2="'+(w-r)+'" y2="'+yy+'" stroke="#e7edf2"/>';
+      html+='<text x="'+(l-12)+'" y="'+(yy+4)+'" text-anchor="end" fill="#718698" font-size="12">'+fmt(maximum*i/2)+'</text>';
+    }
+    rows.forEach(function(q,i){
+      var hh=(q.sessions/maximum)*ph, x=l+step*i+(step-barW)/2, y=t+ph-hh;
+      html+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+hh.toFixed(1)+'" rx="3" fill="#259db2"><title>'+esc(q.name+': '+fmt(q.sessions)+' completed sessions')+'</title></rect>';
+      if(type==='monthly'||i%4===0||i===rows.length-1){
+        html+='<text x="'+(l+step*(i+.5))+'" y="'+(h-11)+'" text-anchor="middle" fill="#70859a" font-size="12">'+esc(q.short)+'</text>';
+      }
+    });
+    return '<svg class="nyfa-mtm-chart" viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Verified completed training sessions in each period">'+html+'</svg>';
+  }
+  function preview(rows) {
+    if (!rows.length) return '';
+    var vals=rows.map(function(q){return q.actual;});
+    var max=Math.max(1,Math.max.apply(null,vals));
+    var coords=vals.map(function(v,i){return (3+i*95/Math.max(1,vals.length-1)).toFixed(1)+','+(28-(v/max)*24).toFixed(1);});
+    return '<svg viewBox="0 0 102 33" width="102" height="33" aria-hidden="true"><polyline points="'+coords.join(' ')+'" fill="none" stroke="#0a968b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+  }
+  function paint() {
+    if (!mounted) return;
+    var src=source(), available=src && src.available && Array.isArray(src.days);
+    var mini=by('preview'), miniDetail=by('preview-detail');
+    if (!available) {
+      mini.innerHTML='<span style="font-size:23px;color:#9aacb7">···</span>';
+      by('shown-youth').textContent='—';
+      by('shown-sessions').textContent='—';
+      by('shown-target').textContent=target()===null?'—':fmt(target());
+      miniDetail.textContent='Connect verified time series';
+      by('summary').textContent=src && src.note || 'Waiting for verified dated attendance from Session Register.';
+      by('line').innerHTML='<div class="nyfa-mtm-empty">Time-series data is not available yet. Add the backend summary code and refresh the website.</div>';
+      by('bars').innerHTML='';
+      return;
+    }
+    var full=series(mode), monthly=series('monthly'), goal=target();
+    mini.innerHTML=preview(monthly.rows);
+    miniDetail.textContent='View 6-month trends';
+    var totalYouth=full.rows.reduce(function(sum,q){return sum+q.youth;},0);
+    by('shown-youth').textContent=fmt(totalYouth);
+    by('shown-sessions').textContent=fmt(full.counted);
+    by('shown-target').textContent=goal===null?'—':fmt(goal);
+    by('summary').textContent=label(date(START_DATE))+' – '+label(addMonths(date(START_DATE),MONTHS-1))+' · Actual training dates · '+(data.fetchedAt?'Last retrieved: '+data.fetchedAt+' (Sri Lanka)':'Live reporting feed');
+    by('line').innerHTML=svgCumulative(full.rows,goal,mode);
+    by('bars').innerHTML=svgSessions(full.rows,mode);
+    var notices=[];
+    if(full.beyond)notices.push(fmt(full.beyond)+' verified session(s) fall outside the configured six-month period.');
+    if(src.undated)notices.push(fmt(src.undated)+' verified session(s) have no usable training date and are excluded from the trend.');
+    if(src.missingAttendance)notices.push(fmt(src.missingAttendance)+' session(s) have missing or invalid attendance, shown as 0 youth.');
+    if(goal===null)notices.push('No confirmed national target available; the reference line is hidden.');
+    by('notice').textContent=notices.join(' ')||'Chart includes verified completed sessions only. The dashed guide assumes an even pace, not an approved monthly target.';
+  }
+  function open() {
+    previousFocus=document.activeElement;
+    by('overlay').hidden=false;
+    document.body.classList.add('nyfa-mtm-open');
+    paint(); by('close').focus();
+  }
+  function close() {
+    by('overlay').hidden=true;
+    document.body.classList.remove('nyfa-mtm-open');
+    if(previousFocus&&previousFocus.focus)previousFocus.focus();
+  }
+  function mount() {
+    if (mounted) return;
+    var card=document.querySelector('#sec-overview .home-progress');
+    if(!card) return;
+    var heading=card.querySelector('.panel-h');
+    if(!heading) return;
+    var styles=document.createElement('style');
+    styles.id='nyfa-momentum-styles';
+    styles.textContent=`
+      .home-progress .panel-h {flex-wrap:wrap;}
+      .home-progress .panel-h > .hint{display:none}
+      .nyfa-mtm-launch{margin-left:auto;display:flex;align-items:center;gap:12px;min-width:188px;min-height:62px;padding:8px 13px;border:1px solid #bfe8e1;border-radius:13px;background:linear-gradient(110deg,#f0faf7,#fff);cursor:pointer;text-align:left;color:#175267;box-shadow:0 3px 14px #0b826b10}
+      .nyfa-mtm-launch:hover,.nyfa-mtm-launch:focus-visible{border-color:#0b978c;box-shadow:0 6px 20px #0b826b25;outline-offset:2px}
+      .nyfa-mtm-launch strong{display:block;font:800 12px Manrope,sans-serif;color:#0c7f77}
+      .nyfa-mtm-launch small{display:block;font:500 10px 'DM Sans',sans-serif;color:#62818c;margin-top:5px}
+      .nyfa-mtm-launch svg{flex:none}
+      body.nyfa-mtm-open{overflow:hidden!important}
+      #nyfa-mtm-overlay{position:fixed;inset:0;background:#0b1c2ccc;z-index:99999;display:grid;place-items:center;padding:20px;backdrop-filter:blur(6px)}
+      #nyfa-mtm-overlay[hidden]{display:none!important}
+      #nyfa-mtm-window{width:min(1100px,100%);max-height:95dvh;overflow:auto;background:#f7fafc;border-radius:22px;box-shadow:0 30px 90px #06162888;color:#142d40;font-family:'DM Sans',sans-serif}
+      .nyfa-mtm-top{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:24px 28px 15px;background:linear-gradient(100deg,#112f45,#12566a);color:white}
+      .nyfa-mtm-top h2{font:800 clamp(19px,2.8vw,27px) Manrope,sans-serif;margin:4px 0 6px;color:white}
+      .nyfa-mtm-top p{font-size:12px;color:#c6e3e6;margin:0}
+      .nyfa-mtm-close{border:1px solid #ffffff66;background:#ffffff1a;color:white;border-radius:9px;padding:10px 16px;cursor:pointer;font-weight:800;white-space:nowrap}
+      .nyfa-mtm-body{padding:21px 27px 27px}
+      .nyfa-mtm-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:19px}
+      .nyfa-mtm-stat{padding:16px 18px;border:1px solid #dce8ed;border-radius:13px;background:white}
+      .nyfa-mtm-stat span{font-size:11px;color:#587589;display:block}
+      .nyfa-mtm-stat b{font:800 clamp(20px,3vw,30px) Manrope,sans-serif;color:#0c5c6f;display:block;margin-top:7px}
+      .nyfa-mtm-tools{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+      .nyfa-mtm-tools strong{font:800 15px Manrope,sans-serif}
+      .nyfa-mtm-toggle{display:flex;gap:4px;background:#e7eff2;border-radius:10px;padding:4px}
+      .nyfa-mtm-toggle button{border:0;background:transparent;padding:8px 14px;border-radius:8px;cursor:pointer;color:#456479;font:800 11px 'DM Sans',sans-serif}
+      .nyfa-mtm-toggle button[aria-pressed="true"]{background:white;color:#087d76;box-shadow:0 2px 9px #22394a18}
+      .nyfa-mtm-panel{background:white;border:1px solid #dce8ed;border-radius:14px;padding:16px 15px;margin-bottom:13px}
+      .nyfa-mtm-panel h3{font:800 13px Manrope,sans-serif;margin:0 0 8px}
+      .nyfa-mtm-legend{display:flex;gap:15px;flex-wrap:wrap;font-size:11px;color:#5b7384;margin:4px 0 10px}
+      .nyfa-mtm-legend i{display:inline-block;width:20px;height:3px;vertical-align:middle;margin-right:6px;border-radius:4px;background:#0b978c}
+      .nyfa-mtm-legend .guide{background:#9babc0;border-top:2px dashed white}
+      .nyfa-mtm-chart{display:block;width:100%;height:auto;overflow:visible}
+      .nyfa-mtm-empty{padding:50px 15px;text-align:center;color:#688193;line-height:1.8;font-size:13px}
+      .nyfa-mtm-foot{font-size:11px;line-height:1.6;color:#627d8b;margin:9px 0 0}
+      @media(max-width:700px){#nyfa-mtm-overlay{padding:0}#nyfa-mtm-window{width:100%;height:100dvh;max-height:100dvh;border-radius:0}.nyfa-mtm-top{padding:19px 16px}.nyfa-mtm-body{padding:15px}.nyfa-mtm-stats{gap:7px}.nyfa-mtm-stat{padding:12px 9px}.nyfa-mtm-stat b{font-size:17px}.nyfa-mtm-launch{margin-left:0}.nyfa-mtm-panel{padding:12px 6px}}
+      @media(prefers-reduced-motion:reduce){#nyfa-mtm-overlay{backdrop-filter:none}}
+    `;
+    document.head.appendChild(styles);
+
+    var launch=document.createElement('button');
+    launch.className='nyfa-mtm-launch';
+    launch.type='button';
+    launch.setAttribute('aria-haspopup','dialog');
+    launch.innerHTML='<span><strong>↗ Training Momentum</strong><small id="nyfa-mtm-preview-detail">View 6-month trends</small></span><span id="nyfa-mtm-preview" aria-hidden="true"></span>';
+    heading.appendChild(launch);
+
+    var overlay=document.createElement('div');
+    overlay.id=prefix+'overlay';overlay.hidden=true;
+    overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');
+    overlay.setAttribute('aria-labelledby',prefix+'title');
+    overlay.innerHTML='<div id="nyfa-mtm-window" tabindex="-1">'+
+       '<div class="nyfa-mtm-top"><div><div style="font-size:10px;letter-spacing:2px;font-weight:800;color:#a6e3e1">NATIONAL YOUTH FIRST AID PROGRAMME</div><h2 id="nyfa-mtm-title">National Training Momentum</h2><p id="nyfa-mtm-summary">Verified training over six months</p></div><button class="nyfa-mtm-close" id="nyfa-mtm-close" type="button">✕ Exit</button></div>'+
+       '<div class="nyfa-mtm-body"><div class="nyfa-mtm-stats"><div class="nyfa-mtm-stat"><span>Youth trained in period</span><b id="nyfa-mtm-shown-youth">—</b></div><div class="nyfa-mtm-stat"><span>Verified sessions in period</span><b id="nyfa-mtm-shown-sessions">—</b></div><div class="nyfa-mtm-stat"><span>National youth target</span><b id="nyfa-mtm-shown-target">—</b></div></div>'+
+       '<div class="nyfa-mtm-tools"><strong>Implementation trends</strong><div class="nyfa-mtm-toggle" role="group" aria-label="Group training by"><button type="button" id="nyfa-mtm-monthly" aria-pressed="true">Monthly</button><button type="button" id="nyfa-mtm-weekly" aria-pressed="false">Weekly</button></div></div>'+
+       '<div class="nyfa-mtm-panel"><h3>Cumulative verified youth trained</h3><div class="nyfa-mtm-legend"><span><i></i>Actual verified attendance</span><span><i class="guide"></i>Evenly paced six-month reference</span></div><div id="nyfa-mtm-line"></div></div>'+
+       '<div class="nyfa-mtm-panel"><h3>Verified training sessions completed</h3><div id="nyfa-mtm-bars"></div></div><p class="nyfa-mtm-foot" id="nyfa-mtm-notice">Aggregated verified data only.</p></div></div>';
+    document.body.appendChild(overlay);
+    mounted=true;
+    launch.addEventListener('click',open);
+    by('close').addEventListener('click',close);
+    overlay.addEventListener('click',function(e){if(e.target===overlay)close();});
+    document.addEventListener('keydown',function(e){
+      if(overlay.hidden)return;
+      if(e.key==='Escape'){e.preventDefault();close();return;}
+      if(e.key==='Tab'){
+        var controls=[by('close'),by('monthly'),by('weekly')];
+        var current=controls.indexOf(document.activeElement);
+        if(e.shiftKey&&current===0){e.preventDefault();controls[controls.length-1].focus();}
+        else if(!e.shiftKey&&current===controls.length-1){e.preventDefault();controls[0].focus();}
+      }
+    });
+    ['monthly','weekly'].forEach(function(v){by(v).addEventListener('click',function(){
+      mode=v;by('monthly').setAttribute('aria-pressed',String(v==='monthly'));
+      by('weekly').setAttribute('aria-pressed',String(v==='weekly'));
+      paint();
+    });});
+    paint();
+  }
+
+  // The website calls render() each time fresh programme data is received.
+  // Hook once so the widget stays current without extra network requests.
+  var previousRender=render;
+  render=function(){previousRender.apply(this,arguments);if(!mounted)mount();paint();};
+  mount();
+})();
 webWatchHomeMap();
 load();if(typeof google!=='undefined'&&google.script&&google.script.run){setInterval(function(){if(!document.hidden)load();},5*60*1000);window.addEventListener('online',function(){if(!document.hidden)load();});}
 })();
