@@ -48,7 +48,7 @@
   var DASHBOARD_CACHE_MS = 5 * 60 * 1000;
   // Fast first visits: GitHub Actions publishes a public file periodically.
   // If 20 minutes old (e.g. Actions is delayed), use the live API instead.
-  var GITHUB_SNAPSHOT_MAX_AGE_MS = 20 * 60 * 1000;
+  var GITHUB_SNAPSHOT_MAX_AGE_MS = 120 * 60 * 1000;
 
   function safeData(value) {
     if (!value || !Array.isArray(value.sessions) || !value.dashboard) return false;
