@@ -1,13 +1,11 @@
-/* NYFA public data bridge — dashboard via GitHub Pages only.
- * Gallery retains its existing approved Google API until separately migrated.
- * No spreadsheet writes. No Google account required for dashboard figures.
+/* NYFA public data bridge — dashboard and approved photos via GitHub Pages only.
+ * No spreadsheet writes. No Google account required for dashboard or gallery.
  */
 (function (global) {
   'use strict';
-  var API_URL = 'https://script.google.com/macros/s/AKfycbw5_o8mL02CWGa3vNILnP4OIe6Mmr_8q7_daVj8VYlvIvMewa9CnhqiS83QmfFSGrCU/exec';
   var CACHE_KEY = 'nyfa-public-verified-snapshot-v2';
   var RECENT_MS = 2 * 60 * 60 * 1000;
-  var sequence = 0, inFlight = null, lastGood = null;
+  var inFlight = null, lastGood = null;
 
   function safeSnapshot(s) {
     return !!(s && Number.isFinite(Date.parse(s.generatedAt)) && s.data &&
@@ -102,45 +100,52 @@
     });
   }
 
-  // Existing gallery transport retained; no changes to photo approval rules.
-  function request(resource, arguments_, onSuccess, onFailure) {
-    var name = 'nyfaCallback_' + Date.now().toString(36) + '_' + (++sequence);
-    var script = document.createElement('script');
-    var finished = false, timeout;
-    function finish(error, value) {
-      if (finished) return;
-      finished = true;
-      clearTimeout(timeout);
-      try { delete global[name]; } catch (ignore) { global[name] = undefined; }
-      if (script.parentNode) script.parentNode.removeChild(script);
-      if (error) {
-        if (typeof onFailure === 'function') onFailure(error);
-        else console.error('NYFA public data connection failed:', error);
-      } else if (typeof onSuccess === 'function') onSuccess(value);
-    }
-    global[name] = function (answer) {
-      if (answer && answer.ok === true) finish(null, answer.data);
-      else finish(new Error(answer && answer.error || 'Public API returned an error.'));
-    };
-    var target = new URL(API_URL);
-    target.searchParams.set('nyfa_public', resource);
-    target.searchParams.set('cb', name);
-    if (arguments_.fresh) target.searchParams.set('fresh', '1');
-    if (arguments_.id) target.searchParams.set('id', arguments_.id);
-    target.searchParams.set('_', Date.now().toString());
-    script.src = target.toString();
-    script.async = true;
-    script.onerror = function () { finish(new Error('Could not reach the public photo endpoint.')); };
-    timeout = setTimeout(function () { finish(new Error('Public photo request timed out.')); }, 30000);
-    document.head.appendChild(script);
+  // Only current, same-origin photos from the server-published approved manifest.
+  // No persistence of photo lists in localStorage; no browser-side Google requests.
+  var galleryInFlight = null, currentGallery = null;
+  function photoPath(value, id, size) {
+    return typeof value === 'string' && new RegExp('^\\./photo-assets/' + id + '-[a-f0-9]{16}-' + size + '\\.jpg$').test(value);
   }
+  function fetchGallery() {
+    if (galleryInFlight) return galleryInFlight;
+    galleryInFlight = new Promise(function(resolve, reject) {
+      var controller = typeof global.AbortController === 'function' ? new global.AbortController() : null;
+      var timer = setTimeout(function(){ if(controller)controller.abort(); reject(new Error('Photo gallery request timed out.')); }, 12000);
+      var options = {cache:'no-store', credentials:'omit'};
+      if(controller)options.signal=controller.signal;
+      global.fetch('./gallery-snapshot.json', options).then(function(res){
+        if(!res.ok)throw new Error('Published photo gallery unavailable.');
+        return res.json();
+      }).then(function(data){
+        if(!data || data.available !== true || !Array.isArray(data.photos))throw new Error('Approved photographs are temporarily unavailable.');
+        var valid = data.photos.every(function(p){
+          return p && typeof p.id === 'string' && /^[a-f0-9]{24}$/.test(p.id) && typeof p.district === 'string' && photoPath(p.full,p.id,'full') && photoPath(p.thumb,p.id,'thumb');
+        });
+        if(!valid)throw new Error('Photo manifest failed validation.');
+        clearTimeout(timer);resolve(data);
+      }).catch(function(error){clearTimeout(timer);reject(error);});
+    }).then(function(data){galleryInFlight=null;currentGallery=data;return data;},function(error){galleryInFlight=null;currentGallery=null;throw error;});
+    return galleryInFlight;
+  }
+  function gallery(success,failure){
+    fetchGallery().then(function(data){if(typeof success==='function')success(data);},function(err){if(typeof failure==='function')failure(err);});
+  }
+  function thumbnail(id,success,failure){
+    var pending = currentGallery ? Promise.resolve(currentGallery) : fetchGallery();
+    pending.then(function(data){
+      var p=data.photos.find(function(p){return p.id===String(id||'');});
+      if(p){if(typeof success==='function')success(p.thumb);}
+      else if(typeof failure==='function')failure(new Error('Photo is not in the approved gallery.'));
+    },function(err){if(typeof failure==='function')failure(err);});
+  }
+
   function runner(success, failure) {
     return {
       withSuccessHandler: function (handler) { return runner(handler, failure); },
       withFailureHandler: function (handler) { return runner(success, handler); },
       getDashboardData: function () { dashboard(success, failure); },
-      nyfaGalleryList: function (fresh) { request('gallery', { fresh: fresh === true }, success, failure); },
-      nyfaGalleryThumbnail: function (id) { request('thumbnail', { id: String(id || '') }, success, failure); }
+      nyfaGalleryList: function () { gallery(success, failure); },
+      nyfaGalleryThumbnail: function (id) { thumbnail(id, success, failure); }
     };
   }
   if (!global.google) global.google = {};
