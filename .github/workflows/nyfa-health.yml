@@ -1,0 +1,46 @@
+name: NYFA Public Health Monitor
+
+on:
+  schedule:
+    # Offset from the publishing workflow; GitHub may delay scheduled jobs.
+    - cron: '17,47 * * * *'
+    - cron: '31 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nyfa-public-health-monitor
+  cancel-in-progress: false
+
+jobs:
+  public-health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out health checks
+        uses: actions/checkout@v4
+      - name: Test anonymous public data, freshness and every published photo
+        run: python3 scripts/reliability_guardian.py monitor
+
+  public-browser:
+    # Run daily and on demand, separate from the more frequent HTTP checks.
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '31 2 * * *'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache browser binaries
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: nyfa-playwright-1.56.0-${{ runner.os }}-${{ runner.arch }}
+
+      - name: Install browser test tools
+        run: |
+          python3 -m venv "$RUNNER_TEMP/nyfa-browser-venv"
+          "$RUNNER_TEMP/nyfa-browser-venv/bin/python" -m pip install --disable-pip-version-check playwright==1.56.0
+          "$RUNNER_TEMP/nyfa-browser-venv/bin/python" -m playwright install --with-deps chromium firefox webkit
+      - name: Test deployed website with Google Apps Script blocked
+        run: '"$RUNNER_TEMP/nyfa-browser-venv/bin/python" scripts/browser_guardian.py --url https://nyfa-srilanka.github.io/'
