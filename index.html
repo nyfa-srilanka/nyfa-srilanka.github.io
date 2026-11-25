@@ -665,6 +665,168 @@
 
 </head>
 <body>
+<!-- NYFA STARTUP + PARTNERSHIPS v2.1 | Paste ONCE immediately after <body> -->
+<style id="nyfa-startup-partnerships-v2-css">
+  #nyfa-welcome-v2 {
+    position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;
+    padding:26px;overflow:hidden;isolation:isolate;text-align:center;
+    background:radial-gradient(ellipse at 50% 41%,#145c64 0%,#103b4c 34%,#0b2034 83%);
+    color:#f4ffff;font-family:'DM Sans',Arial,sans-serif;
+    opacity:1;visibility:visible;transition:opacity .46s ease,visibility .46s ease;
+  }
+  #nyfa-welcome-v2.nyfa-welcome-exit{opacity:0;visibility:hidden;pointer-events:none}
+  #nyfa-welcome-v2::before,#nyfa-welcome-v2::after{content:"";position:absolute;
+    width:min(85vw,680px);aspect-ratio:1;border:1px solid #8cfff318;border-radius:50%;
+    pointer-events:none;z-index:-1}
+  #nyfa-welcome-v2::after{width:min(65vw,450px);border-color:#8cfff31b;
+    box-shadow:0 0 0 66px #64e6d307,0 0 0 130px #64e6d305}
+  #nyfa-welcome-v2 .nyfa-welcome-main{width:min(640px,100%);position:relative;transform:translateY(-1vh)}
+  #nyfa-welcome-v2 .nyfa-welcome-kicker{font:800 10px/1.5 Manrope,'DM Sans',sans-serif;
+    color:#8eede1;letter-spacing:3px;text-transform:uppercase;margin-bottom:25px}
+  #nyfa-welcome-v2 .nyfa-welcome-emblem{width:98px;height:98px;border-radius:29px;margin:0 auto 27px;
+    display:grid;place-items:center;background:linear-gradient(145deg,#2c9493a3,#15515fb8);
+    border:1px solid #91f8ea80;box-shadow:0 0 0 11px #70f9e009,0 21px 70px #1fe2c02c;
+    animation:nyfaWelcomeGlow 2.7s ease-in-out infinite}
+  #nyfa-welcome-v2 .nyfa-welcome-emblem svg{width:69px;height:69px;filter:drop-shadow(0 0 13px #76f6de58)}
+  #nyfa-welcome-v2 h1{font:800 clamp(28px,4.8vw,46px)/1.2 Manrope,'DM Sans',sans-serif;
+    letter-spacing:-1.5px;margin:0 0 13px;color:#fff;text-wrap:balance}
+  #nyfa-welcome-v2 .nyfa-welcome-sub{font:500 clamp(12px,1.8vw,15px)/1.6 'DM Sans',Arial,sans-serif;
+    color:#bddadf;letter-spacing:.2px;margin:0}
+  #nyfa-welcome-v2 .nyfa-welcome-ecg{width:min(310px,80%);height:65px;margin:35px auto 14px;
+    overflow:visible}
+  #nyfa-welcome-v2 .nyfa-welcome-line-base{fill:none;stroke:#3b7380;stroke-width:2;
+    stroke-linecap:round;stroke-linejoin:round;opacity:.55}
+  #nyfa-welcome-v2 .nyfa-welcome-line{fill:none;stroke:#6cf6da;stroke-width:2.6;
+    stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:95 440;
+    animation:nyfaWelcomePulse 2.3s linear infinite;filter:drop-shadow(0 0 5px #70f7e2a0)}
+  #nyfa-welcome-v2 .nyfa-welcome-loading{display:flex;align-items:center;justify-content:center;
+    gap:11px;color:#c4e0e3;font-size:12px;letter-spacing:.5px}
+  #nyfa-welcome-v2 .nyfa-welcome-spinner{height:13px;width:13px;border-radius:50%;
+    border:2px solid #4a8d92;border-top-color:#91ffe6;animation:nyfaWelcomeSpin .9s linear infinite}
+  #nyfa-welcome-v2 .nyfa-welcome-bottom{position:absolute;bottom:29px;left:12px;right:12px;
+    text-align:center;color:#9fc5cb;font:700 10px 'DM Sans',sans-serif;letter-spacing:2px}
+  @keyframes nyfaWelcomeGlow{0%,100%{box-shadow:0 0 0 11px #70f9e009,0 21px 70px #1fe2c02c}
+    50%{box-shadow:0 0 0 16px #70f9e014,0 21px 80px #1fe2c055}}
+  @keyframes nyfaWelcomePulse{from{stroke-dashoffset:535}to{stroke-dashoffset:0}}
+  @keyframes nyfaWelcomeSpin{to{transform:rotate(360deg)}}
+  @media(max-width:540px){
+    #nyfa-welcome-v2{padding:22px}
+    #nyfa-welcome-v2 .nyfa-welcome-kicker{font-size:9px;letter-spacing:2px;margin-bottom:22px}
+    #nyfa-welcome-v2 .nyfa-welcome-emblem{width:81px;height:81px;border-radius:24px;margin-bottom:23px}
+    #nyfa-welcome-v2 .nyfa-welcome-emblem svg{width:59px;height:59px}
+    #nyfa-welcome-v2 h1{letter-spacing:-.8px}
+    #nyfa-welcome-v2 .nyfa-welcome-ecg{margin-top:26px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    #nyfa-welcome-v2 .nyfa-welcome-emblem,
+    #nyfa-welcome-v2 .nyfa-welcome-line,
+    #nyfa-welcome-v2 .nyfa-welcome-spinner{animation:none}
+  }
+  /* Compact, expandable governance section below the existing About text. */
+  #nyfa-governance-v2{margin-top:24px;border:1px solid #d9e8ea;border-radius:15px;
+    background:linear-gradient(120deg,#f5fbfa,#fff);overflow:hidden}
+  #nyfa-governance-v2 summary{display:flex;justify-content:space-between;gap:12px;
+    align-items:center;padding:15px 18px;cursor:pointer;list-style:none;color:#164557;
+    font:800 13px Manrope,'DM Sans',sans-serif}
+  #nyfa-governance-v2 summary::-webkit-details-marker{display:none}
+  #nyfa-governance-v2 summary .nyfa-gov-meta{font:700 11px 'DM Sans',sans-serif;
+    color:#15877d;white-space:nowrap}
+  #nyfa-governance-v2 summary .nyfa-gov-meta::after{content:'+';font-size:17px;margin-left:8px}
+  #nyfa-governance-v2[open] summary .nyfa-gov-meta::after{content:'−'}
+  #nyfa-governance-v2 .nyfa-gov-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;padding:0 16px 16px}
+  #nyfa-governance-v2 .nyfa-gov-item{border:1px solid #e2ecee;border-radius:11px;
+    padding:13px 14px;background:white}
+  #nyfa-governance-v2 .nyfa-gov-role{font:800 10px/1.5 'DM Sans',sans-serif;
+    color:#108d83;text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+  #nyfa-governance-v2 .nyfa-gov-org{font:800 12px/1.45 Manrope,'DM Sans',sans-serif;color:#203f50}
+  #nyfa-governance-v2 .nyfa-gov-desc{font:400 11px/1.65 'DM Sans',sans-serif;color:#6a7f8d;margin:6px 0 0}
+  #nyfa-governance-v2 .nyfa-gov-note{font:400 10px/1.6 'DM Sans',sans-serif;
+    color:#8094a0;padding:0 17px 15px;margin:0}
+  @media(max-width:640px){#nyfa-governance-v2 .nyfa-gov-grid{grid-template-columns:1fr}
+    #nyfa-governance-v2 summary{font-size:12px;padding:14px}}
+</style>
+
+<!-- No stakeholder credits on the startup screen; those appear on the actual homepage. -->
+<div id="nyfa-welcome-v2" role="status" aria-label="Loading National Youth First Aid Programme dashboard" aria-live="polite">
+  <div class="nyfa-welcome-main">
+    <div class="nyfa-welcome-kicker">SRI LANKA · NATIONAL FIRST AID PROGRAMME</div>
+    <div class="nyfa-welcome-emblem" aria-hidden="true">
+      <svg viewBox="0 0 80 80"><path d="M40 17V63M17 40H63" stroke="#8cfce9" stroke-width="12" stroke-linecap="round" fill="none"/></svg>
+    </div>
+    <h1>National Youth<br>First Aid Programme</h1>
+    <p class="nyfa-welcome-sub">National Implementation &amp; Monitoring Dashboard</p>
+    <svg class="nyfa-welcome-ecg" viewBox="0 0 310 65" aria-hidden="true">
+      <path class="nyfa-welcome-line-base" d="M0 34H92L113 34 128 8 145 57 164 23 179 34H310"/>
+      <path class="nyfa-welcome-line" d="M0 34H92L113 34 128 8 145 57 164 23 179 34H310"/>
+    </svg>
+    <div class="nyfa-welcome-loading"><span class="nyfa-welcome-spinner" aria-hidden="true"></span><span>Preparing dashboard…</span></div>
+  </div>
+  <div class="nyfa-welcome-bottom" aria-hidden="true">LEARN · ACT · SAVE LIVES</div>
+</div>
+<script id="nyfa-startup-partnerships-v2-js">
+(function(){
+  'use strict';
+  var welcome=document.getElementById('nyfa-welcome-v2');
+  var started=Date.now(),minMs=850,maxMs=4200,exiting=false;
+  var observer=null;
+  function exitWelcome(){
+    if(exiting||!welcome)return;
+    var remaining=minMs-(Date.now()-started);
+    if(remaining>0){setTimeout(exitWelcome,remaining);return;}
+    exiting=true;
+    if(observer)observer.disconnect();
+    welcome.classList.add('nyfa-welcome-exit');
+    setTimeout(function(){if(welcome&&welcome.parentNode)welcome.parentNode.removeChild(welcome);},550);
+  }
+  // A slow API must NEVER trap visitors behind a blocking loading screen.
+  setTimeout(exitWelcome,maxMs);
+  function insertGovernance(){
+    var about=document.querySelector('#sec-overview .home-about');
+    if(!about||document.getElementById('nyfa-governance-v2'))return;
+    var details=document.createElement('details');
+    details.id='nyfa-governance-v2';
+    details.innerHTML=`
+      <summary><span>Programme Governance &amp; Partnerships</span><span class="nyfa-gov-meta">Explore roles</span></summary>
+      <div class="nyfa-gov-grid">
+        <div class="nyfa-gov-item"><div class="nyfa-gov-role">Programme leadership &amp; oversight</div>
+          <div class="nyfa-gov-org">Ministry of Health — Directorate of Non-Communicable Diseases</div>
+          <p class="nyfa-gov-desc">National technical direction, coordination, training standards and supervision.</p></div>
+        <div class="nyfa-gov-item"><div class="nyfa-gov-role">Technical &amp; financial support</div>
+          <div class="nyfa-gov-org">UNICEF Sri Lanka</div>
+          <p class="nyfa-gov-desc">Support for training-package development and national rollout; designated Implementing Entity under the Pandemic Fund.</p></div>
+        <div class="nyfa-gov-item"><div class="nyfa-gov-role">Funding framework</div>
+          <div class="nyfa-gov-org">Pandemic Fund</div>
+          <p class="nyfa-gov-desc">The programme is supported under the Pandemic Fund initiative.</p></div>
+        <div class="nyfa-gov-item"><div class="nyfa-gov-role">Youth mobilisation &amp; coordination</div>
+          <div class="nyfa-gov-org">National Youth Services Council (NYSC)</div>
+          <p class="nyfa-gov-desc">Collaboration on youth registration, selection and coordination at local level.</p></div>
+        <div class="nyfa-gov-item"><div class="nyfa-gov-role">Training implementation</div>
+          <div class="nyfa-gov-org">St John Ambulance Sri Lanka &amp; Sri Lanka Saukyadana Movement (SLSM)</div>
+          <p class="nyfa-gov-desc">Field-level first-aid training delivery and programme logistics, under the Ministry of Health's national technical guidance.</p></div>
+      </div>
+      <p class="nyfa-gov-note">Role descriptions summarised from the programme Terms of Reference. Existing institutional logos remain displayed above.</p>`;
+    about.appendChild(details);
+  }
+  function ready(){
+    insertGovernance();
+    var status=document.getElementById('modeTag');
+    if(!status)return;
+    function loaded(){
+      var label=(status.textContent||'').trim();
+      return label.length>0 && !/connecting to google sheets|^loading|^preparing/i.test(label);
+    }
+    if(loaded()){exitWelcome();return;}
+    if(typeof MutationObserver==='function'){
+      observer=new MutationObserver(function(){if(loaded())exitWelcome();});
+      observer.observe(status,{childList:true,subtree:true,characterData:true});
+    }
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready,{once:true});
+  else ready();
+})();
+</script>
+<!-- END NYFA STARTUP + PARTNERSHIPS v2.0 -->
 <div class="shell">
   <aside class="sidebar" id="sidebar" role="navigation" aria-label="Primary navigation">
     <button type="button" id="sidebarClose" class="sidebar-dismiss" aria-label="Close navigation">&times;</button>
