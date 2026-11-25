@@ -1850,9 +1850,42 @@ $('mapReset').addEventListener('click',function(){$('district-locations').value=
     var v = m && m.targetYouth && m.targetYouth.value;
     return typeof v === 'number' && isFinite(v) && v > 0 ? v : null;
   }
-  function source() {
-    return data && data.dashboard && data.dashboard.momentum || null;
+
+var momentumRefreshRequested = false;
+
+function source() {
+  var m = data && data.dashboard && data.dashboard.momentum;
+
+  if (
+    (!m || !m.available || !Array.isArray(m.days)) &&
+    !momentumRefreshRequested &&
+    data && data.dashboard &&
+    typeof google !== 'undefined' &&
+    google.script && google.script.run
+  ) {
+    momentumRefreshRequested = true;
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (
+          result && result.dashboard &&
+          result.dashboard.momentum &&
+          result.dashboard.momentum.available === true &&
+          Array.isArray(result.dashboard.momentum.days)
+        ) {
+          done(result);
+        } else {
+          console.warn('Fresh response has no usable Momentum data.');
+        }
+      })
+      .withFailureHandler(function(error) {
+        console.error('Momentum refresh failed:', error);
+      })
+      .getDashboardData(true);
   }
+
+  return m || null;
+}
   function makePeriods(type) {
     var start=date(START_DATE), end=addMonths(start, MONTHS), items=[];
     if (type === 'monthly') {
