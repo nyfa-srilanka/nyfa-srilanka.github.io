@@ -109,7 +109,13 @@
             if (typeof success === 'function') success(value);
           }, failure);
         }
-        if (fresh === true) { live(); return; }
+if (fresh === true) {
+  readGitHubSnapshot(function (value) {
+    saveDashboardSnapshot(value);
+    if (typeof success === 'function') success(value);
+  }, live);
+  return;
+}
         var preview = readDashboardSnapshot();
         if (preview) {
           setTimeout(function () {
