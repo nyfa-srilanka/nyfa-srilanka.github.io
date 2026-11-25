@@ -1113,7 +1113,7 @@
   <button type="button" class="mobile-tab" data-section="resources"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5c3-2 6-2 8 0 2-2 5-2 8 0v14c-3-2-6-2-8 0-2-2-5-2-8 0Z"/><path d="M12 5v14"/></svg><span>Resources</span></button>
 </nav>
 <!-- GitHub Pages bridge; NOT for the Google Apps Script Index.html -->
-<script src="./bridge.js"></script>
+<script src="./bridge.js?v=3"></script>
 <!-- NYFA PHOTO GALLERY ADD-ON
      Paste this ENTIRE block into your existing Index.html, immediately
      BEFORE the line beginning 
@@ -1353,16 +1353,16 @@ function done(result){
  webDataLoaded=true;
  data.sessions.sort(function(a,b){return (a.date||'9999').localeCompare(b.date||'9999')||String(a.district).localeCompare(String(b.district))});
  var health=data.reliability||{},mode=demo?'demo':(health.mode||(data.dashboard.available?'live':'partial'));
- if(mode==='live' || mode==='recent')webLastGoodClient=data;
- var title={demo:'● DEMONSTRATION DATA',live:'● CONNECTED TO GOOGLE SHEETS',recent:'● RECENT GOOGLE SHEETS DATA',
+if(['live','recent','cached'].includes(mode))webLastGoodClient=data;
+  var title={demo:'● DEMONSTRATION DATA',live:'● CONNECTED TO GOOGLE SHEETS',recent:'● RECENT GOOGLE SHEETS DATA',
    partial:'● PARTIAL REPORTING DATA',cached:'● CACHED DATA · NOT LIVE',
    summary:'● HISTORICAL KPI SUMMARY · NOT LIVE',unavailable:'● LIVE DATA UNAVAILABLE'};
  $('modeTag').textContent=title[mode]||title.unavailable;
  $('syncState').textContent=mode==='live'?'Google Sheets fetched · '+(data.fetchedAt||'time unavailable')+' (Sri Lanka)':
    mode==='recent'?'Recent Sheet snapshot · '+(data.fetchedAt||'time unavailable')+' (Sri Lanka) · cached '+(health.cacheAgeSeconds||0)+'s':
    mode==='demo'?'Preview mode':'Data status: '+mode+' · '+(health.sourceAsOf||'no live timestamp');
- if(mode==='cached')webStatusBanner(mode,'LIVE REFRESH FAILED · This is a temporary cached copy from '+webLabelDate(health.sourceAsOf)+'. Check the date before using figures for reports.');
- else if(mode==='summary')webStatusBanner(mode,'LIVE REFRESH FAILED · Only historical KPI totals from '+webLabelDate(health.sourceAsOf)+' are available. Training sessions, district breakdown and map are NOT current or available.');
+if(mode==='cached')webStatusBanner(mode,'Showing the last verified programme data from '+webLabelDate(health.sourceAsOf)+'. A newer update is not currently available.');
+else if(mode==='summary')webStatusBanner(mode,'LIVE REFRESH FAILED · Only historical KPI totals from '+webLabelDate(health.sourceAsOf)+' are available. Training sessions, district breakdown and map are NOT current or available.');
  else if(mode==='partial')webStatusBanner(mode,'PARTIAL DATA · The latest schedule was retrieved, but some reporting totals could not be verified. Check Data Checks before using the figures.');
  else if(mode==='unavailable')webStatusBanner(mode,'Programme data is currently unavailable. No reliable figures were retrieved. Try again later.');
  else webStatusBanner(mode,'');
@@ -1386,7 +1386,7 @@ function render(){
  var k=d.metrics||{};
  var pairs=[['kTargetYouth','targetYouth'],['kYouthTrained','youthTrained'],['kCompleted','completedSessions'],['kCoverage','youthCoverage'],['kScheduled','scheduledSessions']];
  pairs.forEach(function(pair){$(pair[0]).textContent=(d.available||pair[1]==='scheduledSessions')?measureText(k[pair[1]]):'—'});
- $('dashboardSource').textContent=demo?'DEMONSTRATION DATA ONLY · These values are illustrative.':d.available?((data.reliability&&data.reliability.mode==='recent')?'RECENT SNAPSHOT · ':'LIVE · ' )+'Training results: '+(d.source||'Reporting records')+' · Schedule: Master Schedule · Pins: Map Data':(d.message||'Training results are unavailable. Check the reporting spreadsheet connection.');
+$('dashboardSource').textContent=demo?'DEMONSTRATION DATA ONLY · These values are illustrative.':d.available?('PUBLISHED PROGRAMME DATA · Last retrieved: '+(data.fetchedAt||'Time unavailable')+' · Training results: '+(d.source||'Reporting records')+' · Schedule: Master Schedule · Pins: Map Data'):(d.message||'Training results are temporarily unavailable.');
   webSafeSection('Data Checks',renderDataChecks);
   webSafeSection('National progress',renderProgress);
   if(data.reliability && ['summary','unavailable'].indexOf(data.reliability.mode)>=0){
