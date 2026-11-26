@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   public-health:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - name: Check out health checks
@@ -27,7 +27,7 @@ jobs:
   public-browser:
     # Run daily and on demand, separate from the more frequent HTTP checks.
     if: github.event_name == 'workflow_dispatch' || github.event.schedule == '31 2 * * *'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
