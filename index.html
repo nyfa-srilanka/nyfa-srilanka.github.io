@@ -864,14 +864,15 @@
   </div>
   <!-- 01 Ministry of Health programme banner -->
   <div class="banner homepage-banner">
-    <div class="homepage-hero-copy">
+    <div class="v2-programme-title">
       <div class="tag">MINISTRY OF HEALTH · SRI LANKA</div>
-      <h2>National Youth First Aid Programme</h2>
-      <p class="banner-subtitle">National Implementation &amp; Monitoring Dashboard</p>
-      <p class="banner-detail">Tracking training delivery, community preparedness and implementation progress across Sri Lanka.</p>
+      <h2>National Youth<br>First Aid Programme</h2>
+    </div>
+    <div class="homepage-hero-copy">
+      <p class="banner-subtitle">National dashboard</p>
+      <p class="banner-detail">Training delivery and programme reach across Sri Lanka.</p>
       <span class="homepage-live" id="modeTag">Connecting to Google Sheets…</span>
     </div>
-    <div class="hero-art" aria-hidden="true"><div class="ring"><div class="cross">+</div></div><div class="dot"></div></div>
   </div>
 
   <!-- 02 Five national KPIs from the Dashboard worksheet -->
@@ -2930,5 +2931,332 @@ load();if(typeof google!=='undefined'&&google.script&&google.script.run){setInte
 })();
 </script>
 <!-- End NYFA National Dashboard Presentation Mode -->
+<style id="nyfa-website-v2">
+/* NYFA Website 2.0 presentation. Existing data and reliability logic retained. */
+:root{--ink:#132d36;--muted:#536d74;--navy:#153b43;--teal:#087f79;--teal-d:#08716c;--cream:#f2f6f4;--line:#dce7e2;--r:14px;--shadow:0 4px 18px #1b433b0b}
+body {
+  background: #eae1cf;
+  color: #132d36;
+}
+.main { background: #eae1cf; }
+
+/* Fine contour lines add depth to the programme masthead. */
+#sec-overview .homepage-banner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(19rem, 1fr);
+  gap: clamp(1.5rem, 4vw, 4.5rem);
+  align-items: center;
+  min-height: 0;
+  margin: 0;
+  padding: clamp(1.35rem, 2.2vw, 2.25rem) clamp(1.25rem, 3.3vw, 3.5rem);
+  border: 0;
+  border-bottom: 3px solid #d5aa62;
+  border-radius: 0;
+  background-color: #103f40;
+  background-image:
+    repeating-radial-gradient(ellipse 46% 200% at 104% 130%, transparent 0 20px, #a4d8b91a 21px, transparent 22px 28px),
+    linear-gradient(105deg, #103539 8%, #104545 57%, #216450);
+  box-shadow: none;
+  color: #fff7e6;
+}
+#sec-overview .homepage-banner::before,
+#sec-overview .homepage-banner::after,
+#sec-overview .homepage-banner .tag::before {
+  display: none;
+}
+#sec-overview .homepage-banner .tag {
+  color: #f2d49c;
+  font-size: .75rem;
+  letter-spacing: .12em;
+}
+#sec-overview .homepage-banner h2 {
+  max-width: none;
+  margin: .55rem 0 0;
+  font: 500 clamp(3rem, 5.3vw, 5.35rem)/.99 Georgia, 'Times New Roman', serif;
+  letter-spacing: -.045em;
+  color: #fff6e6;
+}
+#sec-overview .homepage-hero-copy {
+  padding-inline-start: clamp(1rem, 2.2vw, 2.1rem);
+  border-inline-start: 2px solid #bb9557;
+}
+#sec-overview .homepage-banner .banner-subtitle {
+  color: #fff8eb;
+  font-size: clamp(1.15rem, 1.65vw, 1.55rem);
+  font-weight: 750;
+  line-height: 1.25;
+}
+#sec-overview .homepage-banner .banner-detail {
+  margin: .25rem 0;
+  font-size: .92rem;
+  color: #d5e8db;
+  line-height: 1.5;
+}
+#sec-overview .homepage-banner .homepage-live {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin-top: .45rem;
+  color: #dbeadb;
+  font-size: .75rem;
+}
+#sec-overview .nyfa-phase1-hero-actions {
+  margin-top: .75rem;
+  gap: .5rem;
+}
+#sec-overview .nyfa-phase1-cta {
+  padding: .55rem .75rem;
+  border: 1px solid #edd294;
+  background: #edd294;
+  color: #183c36;
+  box-shadow: none;
+}
+#sec-overview .nyfa-phase1-cta.secondary {
+  background: #123c3c;
+  border-color: #83b3a4;
+  color: #f5f5e6;
+}
+@media (max-width: 800px) {
+  #sec-overview .homepage-banner {
+    grid-template-columns: 1fr;
+    gap: .9rem;
+    margin-bottom: 0;
+    padding: 1rem;
+  }
+  #sec-overview .homepage-banner h2 {
+    font-size: clamp(2rem, 9.3vw, 3.8rem);
+  }
+  #sec-overview .homepage-hero-copy {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .4rem .9rem;
+    border: 0;
+    padding: 0;
+  }
+  #sec-overview .homepage-banner .banner-detail { display: none; }
+  #sec-overview .homepage-banner .homepage-live { margin: 0; }
+  #sec-overview .nyfa-phase1-hero-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    flex-basis: 100%;
+    gap: .35rem;
+    margin-top: .1rem;
+  }
+  #sec-overview .nyfa-phase1-hero-actions button {
+    padding: .45rem .25rem;
+    font-size: .75rem !important;
+    line-height: 1.3;
+    justify-content: center;
+    white-space: normal;
+  }
+  #sec-overview .homepage-banner { margin-bottom: 0 !important; }
+}
+.content{max-width:1450px;padding:10px 34px 42px}
+.topbar{height:56px;border-bottom:1px solid #d2c6af;background:#f7f0e1;box-shadow:none}
+.crumb{font-size:14px;color:#536d74}.crumb strong{color:#143c40}
+.refresh,.syncpill,.mini-button,.ghost,.nyfa-phase1-cta{font-size:13px!important;border-radius:7px!important}
+.avatar{background:#e1eee8;color:#176e60}
+.page-head .h1,.panel-h h3,.homepage-heading-row h3,.section-top h3{letter-spacing:-.5px;color:#123c40}
+.panel{border:1px solid #dce8e1!important;border-radius:14px!important;padding:23px!important;box-shadow:0 5px 20px #25493f08!important}
+.eyebrow{font-size:11px;letter-spacing:1.7px;color:#08716c}
+.panel-h h3,.homepage-heading-row h3{font-size:20px!important;line-height:1.25}
+.hint,.small-source,.progress-note,.map-disclaimer,.metric-foot,.home-about p{font-size:13px!important;color:#516e73!important;line-height:1.6}
+#sec-overview .institutional-logos{margin:0!important;padding:9px 16px!important;border-radius:10px 10px 0 0!important;box-shadow:none!important;display:flex;flex-direction:row;align-items:center;gap:12px;flex-wrap:nowrap;background:#fff}
+#sec-overview .institutional-logo-lead{min-height:0!important;border:0!important;padding:0!important;width:auto;flex:0 1 auto;min-width:0}
+#sec-overview .institutional-logo-unicef .institutional-logo-img{max-height:40px!important;max-width:140px!important}
+#sec-overview .institutional-logo-moh .institutional-logo-img{max-height:48px!important;max-width:100%!important}
+#sec-overview .institutional-logo-moh{flex:1 1 45%;border-left:1px solid #dfebe5!important;padding-left:13px!important}
+#sec-overview .institutional-logo-partners{width:auto;flex:1 1 40%;min-width:0;border-left:1px solid #dfebe5;padding-left:12px!important;gap:11px!important}
+#sec-overview .institutional-logo-partner{height:42px!important;flex:1 1 0!important}.institutional-logo-partner .institutional-logo-img{max-height:38px!important}
+#sec-overview .homepage-heading-row {
+  margin: 0;
+  padding: .9rem 1.2rem .75rem;
+  background: #fbf4e6;
+  border-inline: 1px solid #d2c6af;
+}
+#sec-overview .home-kpis {
+  grid-template-columns: repeat(5,minmax(0,1fr)) !important;
+  gap: 1px !important;
+  background: #c5c5ae;
+  border: 1px solid #c5c5ae;
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+  margin: 0 0 15px !important;
+}
+#sec-overview .home-kpis .metric {
+  min-height: 116px !important;
+  padding: 12px 17px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #fbf4e6 !important;
+  box-shadow: none !important;
+}
+#sec-overview .home-kpis .metric::before { display: none; }
+#sec-overview .home-kpis .metric:hover { transform: none; }
+#sec-overview .home-kpis .metric:nth-child(2) { background: #bcdacb !important; }
+#sec-overview .home-kpis .metric:nth-child(4) { background: #dae6d5 !important; }
+#sec-overview .home-kpis .metric:nth-child(5) { background: #fbf4e6 !important; }
+#sec-overview .home-kpis .metric-label{font-size:13px!important;color:#365c5d!important;font-weight:800!important;line-height:1.3!important}
+#sec-overview .home-kpis .metric-icon{width:30px!important;height:30px!important;color:#147e70!important;background:#e6f2eb!important;border-radius:6px!important;font-size:16px!important}
+#sec-overview .home-kpis .metric-num{font-size:clamp(25px,2.7vw,37px)!important;line-height:1.15!important;letter-spacing:-1.15px!important;color:#143c40!important;margin:9px 0 3px!important}
+#sec-overview .home-kpis .metric-foot{font-size:12px!important;line-height:1.35!important}
+#sec-overview .home-progress {
+  background: #d4e4d6 !important;
+  border-color: #a9c6b5 !important;
+  margin-bottom: 15px !important;
+}
+#sec-overview .home-map-panel { background: #f2f3e8; }
+#sec-overview .home-upcoming { background: #fbefda; }
+#sec-overview .home-about { background: #f2f3e8; }
+#sec-overview .home-progress .progress-large{color:#087f79!important;font-size:42px!important}
+#sec-overview .home-progress .progress-caption{font-size:13px!important;color:#536d74!important}
+#sec-overview .progress-track{background:#dfebe4!important;height:10px}
+#sec-overview .progress-fill{background:#108575!important}
+#sec-overview .nyfa-phase1-ring-fill{stroke:#108575!important}
+#sec-overview .nyfa-mtm-launch{background:#edf6f0!important;border:1px solid #c6ded2!important;border-radius:8px!important;box-shadow:none}
+#sec-overview .nyfa-mtm-launch strong{font-size:14px!important;color:#116759!important}
+#sec-overview .nyfa-mtm-launch small{font-size:12px!important;color:#456b68!important}
+#sec-overview .home-map-side{background:#edf5ef!important;border-radius:9px!important}
+#sec-overview .home-map-canvas{border-radius:9px!important}
+#sec-overview .home-upcoming .row-upcoming{padding:14px 0}
+#sec-overview .event-name{font-size:14px}.event-session,.event-sub{font-size:12px}
+#sec-overview .date-chip{border-radius:7px;background:#e7f3ed;border-color:#c8e3d5}
+#sec-overview .home-about .skill-item{background:#f1f7f2;border:1px solid #dce9e0;border-radius:9px}
+#sec-overview #nyfa-governance-v2{background:#f8fbf8;border-color:#cddfd3;border-radius:9px}
+.nyg-hero{background:#153c43!important;border-radius:12px!important}.nyg-hero h2{font-family:Georgia,serif!important}
+.tablepanel,.districtcard,.dp-kpi,.dp-toolbar,.nyg-card{border-radius:10px!important;border-color:#dce8e1!important}
+button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid #c08c36!important;outline-offset:2px}
+@media(min-width:1001px){
+  .shell{display:block!important}.sidebar{position:relative!important;top:auto!important;left:auto!important;width:100%!important;height:auto!important;min-height:0!important;display:flex!important;flex-direction:row!important;flex-wrap:wrap;align-items:center;justify-content:center;gap:5px;padding:8px 25px!important;overflow:visible!important;background:#153c43!important;transform:none!important;border-bottom:4px solid #d1a752}
+  .sidebar .brand.pandemic-brand{background:transparent;border:0;box-shadow:none;border-radius:0;margin:0 14px 0 0;padding:0;min-height:0;flex:0 0 auto}
+  .sidebar .pandemic-brand-logo{width:clamp(156px,12vw,190px);height:auto;max-height:none;object-fit:contain}
+  .sidebar .navlabel,.sidebar .sidebar-bottom,.sidebar-dismiss{display:none!important}
+  .sidebar .navbtn{width:auto!important;flex:none;gap:6px!important;color:#e6f1ec!important;padding:11px 12px!important;font-size:13px!important;border-radius:5px!important;white-space:nowrap;box-shadow:none!important}
+  .sidebar .navbtn .navicon{display:none}.sidebar .navbtn.active{color:white!important;background:#38706a!important;box-shadow:inset 0 -3px #e4bc67!important}
+  .topbar{position:relative!important;padding:0 max(30px,calc((100vw - 1380px)/2))!important;height:60px!important}
+  .topbar .mobiletoggle{display:none!important}
+  #sec-overview .home-kpis .metric:nth-child(5){grid-column:auto!important}
+}
+@media(max-width:1000px){.content{padding:13px 17px 35px}.topbar{height:61px!important}.sidebar{background:#153c43}.home-kpis .metric{min-width:0}.institutional-logos{gap:8px!important}}
+@media(max-width:720px){
+  .content{padding:10px 12px 30px!important}
+  #sec-overview .institutional-logos{flex-wrap:wrap!important;justify-content:center;padding:6px 9px!important;gap:5px!important}
+  #sec-overview .institutional-logo-unicef{flex:0 1 25%!important}.institutional-logo-unicef .institutional-logo-img{max-height:29px!important}
+  #sec-overview .institutional-logo-moh{flex:1 1 60%!important;max-width:72%!important;padding-left:6px!important}.institutional-logo-moh .institutional-logo-img{max-height:30px!important}
+  #sec-overview .institutional-logo-partners{flex:1 1 100%!important;border-left:0!important;border-top:1px solid #dce7df;padding:3px 0 0!important;gap:17px!important}.institutional-logo-partner{height:35px!important}.institutional-logo-partner .institutional-logo-img{max-height:31px!important}
+  #sec-overview .homepage-heading-row{margin:0!important;padding:.65rem .7rem;align-items:center!important}.homepage-heading-row h3{font-size:18px!important}.homepage-heading-row .mini-button{font-size:11px!important;max-width:120px;line-height:1.3}
+  #sec-overview .home-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important;margin-bottom:12px!important}
+  #sec-overview .home-kpis .metric{min-height:100px!important;padding:9px 10px!important}
+  #sec-overview .home-kpis .metric-label{font-size:12px!important}.home-kpis .metric-icon{width:24px!important;height:24px!important}
+  #sec-overview .home-kpis .metric-num{font-size:27px!important;margin:4px 0 2px!important}.home-kpis .metric-foot{font-size:11px!important}
+  #sec-overview .home-kpis .metric:nth-child(5){grid-column:span 2!important;min-height:75px!important}
+  .panel{padding:16px!important}.panel-h h3{font-size:19px!important}
+  #sec-overview .home-progress .progress-large{font-size:34px!important}
+  #sec-overview .home-progress .panel-h{gap:7px!important;align-items:flex-start!important}
+  #sec-overview .nyfa-mtm-launch{min-height:48px!important;min-width:0!important;padding:7px 9px!important;gap:5px!important}
+  #sec-overview .nyfa-mtm-launch strong{font-size:12px!important}#sec-overview .nyfa-mtm-launch small{font-size:11px!important}
+}
+@media(min-width:721px) and (max-width:1000px){#sec-overview .home-kpis{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+/* Final compact-first refinements for a true dashboard landing page. */
+@media(min-width:1001px){
+  #sec-overview .home-kpis .metric{min-height:115px!important}
+}
+@media(max-width:720px){
+  .topbar .refresh{font-size:0!important}
+  .topbar .refresh::before,.topbar .refresh::after{font-size:21px!important}
+  #sec-overview .home-kpis .metric{padding:8px 9px!important;min-height:88px!important}
+  #sec-overview .home-kpis .metric-foot{font-size:11px!important;line-height:1.2!important}
+  #sec-overview .home-kpis .metric-icon{width:24px!important;height:24px!important}
+  #sec-overview .home-kpis .metric:nth-child(5){min-height:68px!important;display:grid;grid-template-columns:1fr 80px;align-items:center;column-gap:12px}
+  #sec-overview .home-kpis .metric:nth-child(5) .metric-num{grid-column:2;grid-row:1/3;text-align:right;font-size:30px!important}
+  #sec-overview .home-kpis .metric:nth-child(5) .metric-icon{display:none}
+  #sec-overview .home-kpis .metric:nth-child(5) .metric-foot{grid-column:1}
+}
+/* Photo presentation for the existing approved district albums. */
+#sec-gallery #nyfa-albums-v2 .na-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  gap: 1.5rem;
+  align-items: start;
+}
+
+#sec-gallery #nyfa-albums-v2 .na-card {
+  width: 100%;
+  max-width: 30rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #183e41;
+}
+
+#sec-gallery #nyfa-albums-v2 .na-card:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+#sec-gallery #nyfa-albums-v2 .na-card:hover .na-caption strong,
+#sec-gallery #nyfa-albums-v2 .na-card:focus-visible .na-caption strong {
+  text-decoration: underline;
+  text-underline-offset: .2em;
+}
+
+/* One complete photograph introduces each district album. */
+#sec-gallery #nyfa-albums-v2 .na-collage {
+  display: block;
+  width: 100%;
+  aspect-ratio: auto;
+  background: transparent;
+}
+
+#sec-gallery #nyfa-albums-v2 .na-collage img:not(:first-child) {
+  display: none;
+}
+
+#sec-gallery #nyfa-albums-v2 .na-collage img:first-child,
+#sec-gallery #nyfa-albums-v2 .na-photo-preview {
+  display: block;
+  width: 100%;
+  height: auto;
+  padding: 0;
+  aspect-ratio: auto;
+  object-fit: contain;
+  border-radius: 3px;
+  background: transparent;
+}
+
+#sec-gallery #nyfa-albums-v2 .na-caption {
+  flex-flow: row wrap;
+  align-items: baseline;
+  padding: .65rem 0;
+  border-bottom: 1px solid #c9d9d1;
+}
+
+#sec-gallery #nyfa-albums-v2 .na-caption strong {
+  font-size: 1rem;
+}
+
+#sec-gallery #nyfa-albums-v2 .na-caption span {
+  color: #526b66;
+  font-size: .875rem;
+}
+</style>
+<script>
+// Keep the geographical overview immediately ahead of the training calendar.
+(function () {
+  function orderHomepageSections() {
+    var home = document.getElementById('sec-overview');
+    if (!home) return;
+    var map = home.querySelector('.home-map-panel');
+    var upcoming = home.querySelector('.home-upcoming');
+    if (map && upcoming) upcoming.before(map);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', orderHomepageSections);
+  } else {
+    orderHomepageSections();
+  }
+})();
+</script>
 </body>
 </html>
