@@ -66,6 +66,56 @@
     var style = document.createElement('style');
     style.id = 'nyfa-dex-css';
     style.textContent = `
+          /* District performance visual upgrade */
+      #sec-districts .dp-district-table {
+        width: 100%;
+        margin: 0 auto;
+        border-collapse: collapse;
+        min-width: 740px;
+      }
+
+      #sec-districts .dp-district-table th {
+        padding: 15px 18px;
+        text-align: center;
+        background: #f1f7f4;
+        border-bottom: 1px solid #dce8e1;
+        font-size: 11px;
+      }
+
+      #sec-districts .dp-district-table td {
+        padding: 13px 18px;
+        text-align: center;
+        border-bottom: 1px solid #edf1ef;
+      }
+
+      #sec-districts .dp-district-table th:first-child,
+      #sec-districts .dp-district-table td:first-child {
+        text-align: left;
+      }
+
+      #sec-districts .dp-district-table tbody tr:hover {
+        background: #f0f8f5;
+      }
+
+      #sec-districts .dp-progress-in-table {
+        justify-content: center;
+      }
+
+      #sec-districts #nyfa-dex .dex-map-canvas {
+        height: 580px;
+      }
+
+      @media(max-width:1050px) {
+        #sec-districts #nyfa-dex .dex-map-canvas {
+          height: 480px;
+        }
+      }
+
+      @media(max-width:650px) {
+        #sec-districts #nyfa-dex .dex-map-canvas {
+          height: 400px;
+        }
+      }
       #nyfa-dex {margin: 5px 0 22px; color:#223b50;}
       #nyfa-dex *, #nyfa-dex *:before, #nyfa-dex *:after {box-sizing:border-box}
       #nyfa-dex .dex-top {display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin:0 0 13px;flex-wrap:wrap}
@@ -331,7 +381,7 @@
       }
       try {
         state.map = L.map('dex-map', {scrollWheelZoom:false,zoomControl:true,attributionControl:false,
-          minZoom:6, maxZoom:11,preferCanvas:true});
+          minZoom:5, maxZoom:11, zoomSnap:0.1, zoomDelta:0.5, preferCanvas:true});
         state.layer = L.geoJSON(state.boundaries, {
           style:function () {return {color:'#ffffff',weight:1,fillColor:'#dce3ea',fillOpacity:1};},
           onEachFeature:function (feature,shape) {
