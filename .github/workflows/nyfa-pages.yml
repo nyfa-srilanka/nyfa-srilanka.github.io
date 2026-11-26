@@ -26,8 +26,7 @@ jobs:
       - name: Prepare site files
         run: |
           mkdir -p public
-          cp index.html bridge.js phase1-ui.js smart-map.js home-map-expand.js training-calendar.js nyfa-district-gallery.js nyfa-home-photo-banner.js nyfa-district-explorer.js public/
-
+          cp index.html bridge.js phase1-ui.js smart-map.js home-map-expand.js training-calendar.js nyfa-district-gallery.js nyfa-home-photo-banner.js nyfa-district-explorer.js favicon.png nyfa-share.png public/
       - name: Build up-to-date public data snapshot
         env:
           NYFA_PUBLIC_API_URL: 'https://script.google.com/macros/s/AKfycbw5_o8mL02CWGa3vNILnP4OIe6Mmr_8q7_daVj8VYlvIvMewa9CnhqiS83QmfFSGrCU/exec'
